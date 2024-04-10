@@ -1,0 +1,4 @@
+
+### LOGS ###
+log_file: log.txt 
+log_level: DEBUG

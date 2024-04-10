@@ -1,0 +1,26 @@
+[tool.poetry]
+name = "forge-py"
+version = "0.1.0"
+description = "forge-py is a footprint generator (FOotpRint GEnerator) from science data netcdf files"
+authors = ["James Wood <James.F.Wood@jpl.nasa.gov>"]
+readme = "README.md"
+packages = [
+    { include = "podaac" },
+]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+pyyaml = "^6.0"
+
+[tool.poetry.dev-dependencies]
+pytest = "^8.0.1"
+flake8 = "^7.0.0"
+pylint = "^3.0.3"
+pytest-cov = "^4.1.0"
+
+[tool.poetry.scripts]
+forge = "podaac.forge_py.cli:main"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
