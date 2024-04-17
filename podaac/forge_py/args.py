@@ -26,9 +26,7 @@ def create_parser():
 
     parser = ArgumentParser()
     parser.add_argument("--config")
-    
     parser.add_argument("-g", "--granule")
-
     parser.add_argument("--log-file")
     parser.add_argument("--log-level")
 
