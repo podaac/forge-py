@@ -1,8 +1,10 @@
+"""Python footprint generator"""
+
 import xarray as xr
 import numpy as np
 import alphashape
 from shapely.wkt import dumps
-from netCDF4 import Dataset
+
 
 def fit_footprint(lon, lat, thinning_fac=100, alpha=0.05, return_xythin=False):
     """
@@ -25,16 +27,15 @@ def fit_footprint(lon, lat, thinning_fac=100, alpha=0.05, return_xythin=False):
     alpha_shape = alphashape.alphashape(xy, alpha=alpha)
     if return_xythin:
         return alpha_shape, x_thin, y_thin
-    else:
-        return alpha_shape
+    return alpha_shape
 
 if __name__ == "__main__":
 
-    file = "/Users/simonl/Desktop/forge_py/measures_esdr_scatsat_l2_wind_stress_23433_v1.1_s20210228-054653-e20210228-072612.nc"
+    FILE = "/Users/simonl/Desktop/forge_py/measures_esdr_scatsat_l2_wind_stress_23433_v1.1_s20210228-054653-e20210228-072612.nc"
 
-    data = xr.open_dataset(file)
+    data = xr.open_dataset(FILE)
 
-    alpha_shape = fit_footprint(nc['lon'], nc['lat'], thinning_fac=70, alpha=0.03, return_xythin=False)
-    wkt_representation = dumps(alpha_shape)
+    alpha_shape_ = fit_footprint(data['lon'], data['lat'], thinning_fac=70, alpha=0.03, return_xythin=False)
+    wkt_representation = dumps(alpha_shape_)
 
     print(wkt_representation)

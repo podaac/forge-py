@@ -11,9 +11,8 @@ import botocore
 from cumulus_logger import CumulusLogger
 from cumulus_process import Process, s3
 from podaac.forge_py import forge
-from podaac.lambda_handler.cumulus_cli_handler.handlers import activity
 
-cumulus_logger = CumulusLogger('image_generator')
+cumulus_logger = CumulusLogger('forge_py')
 
 
 def clean_tmp(remove_matlibplot=True):
@@ -65,10 +64,6 @@ class FootprintGenerator(Process):
         gets the bucket where png to be stored
     process()
         main function ran for image generation
-    generate_file_dictionary({file_data}, /user/test/test.png, test.png, [....], {....})
-        creates the dictionary data for a generated image
-    image_generate({file_data}, "/tmp/configuration.cfg", "/tmp/palette_dir", "granule.nc" )
-        generates all images for a nc file
     get_config()
         downloads configuration file for tig
     download_file_from_s3('s3://my-internal-bucket/dataset-config/MODIS_A.2019.cfg', '/tmp/workspace')
@@ -81,10 +76,12 @@ class FootprintGenerator(Process):
         super().__init__(*args, **kwargs)
         self.logger = cumulus_logger
 
+
     def clean_all(self):
         """ Removes anything saved to self.path """
         rmtree(self.path)
         clean_tmp()
+
 
     def download_file_from_s3(self, s3file, working_dir):
         """ Download s3 file to local
@@ -107,6 +104,7 @@ class FootprintGenerator(Process):
             self.logger.error("Error downloading file %s: %s" % (s3file, working_dir), exc_info=True)
             raise ex
 
+
     def upload_file_to_s3(self, filename, uri):
         """ Upload a local file to s3 if collection payload provided
 
@@ -122,6 +120,7 @@ class FootprintGenerator(Process):
         except botocore.exceptions.ClientError as ex:
             self.logger.error("Error uploading file %s: %s" % (os.path.basename(os.path.basename(filename)), str(ex)), exc_info=True)
             raise ex
+
 
     @staticmethod
     def get_file_type(filename, files):
@@ -139,6 +138,7 @@ class FootprintGenerator(Process):
             if re.match(collection_file.get('regex', '*.'), filename):
                 return collection_file['type']
         return 'metadata'
+
 
     @staticmethod
     def get_bucket(filename, files, buckets):
@@ -165,10 +165,6 @@ class FootprintGenerator(Process):
                 break
         return buckets[bucket_type]
 
-    @classmethod
-    def cumulus_activity(cls, arn=os.getenv('ACTIVITY_ARN')):
-        """ Run an activity using Cumulus messaging (cumulus-message-adapter) """
-        activity(cls.cumulus_handler, arn)
 
     def get_config(self):
         """Get configuration file for image generations
@@ -196,6 +192,7 @@ class FootprintGenerator(Process):
             raise ValueError('Environment variable to get configuration files were not set')
 
         return cfg_file_full_path
+
 
     def process(self):
         """Main process to generate images for granules
@@ -226,10 +223,7 @@ class FootprintGenerator(Process):
         for granule in granules:
             granule_id = granule['granuleId']
             for file_ in granule['files']:
-
-                uploaded_images = self.image_generate(file_, config_file_path, self.path, granule_id)
-                if uploaded_images:
-                    append_output[granule_id] = append_output.get(granule_id, []) + uploaded_images
+                print(file_)
             if granule_id in append_output:
                 granule['files'] += append_output[granule_id]
 
@@ -240,6 +234,7 @@ class FootprintGenerator(Process):
     def handler(cls, event, context=None, path=None, noclean=False):
         """ General event handler """
         return cls.run(path=path, noclean=noclean, context=context, **event)
+
 
     @classmethod
     def run(cls, *args, **kwargs):

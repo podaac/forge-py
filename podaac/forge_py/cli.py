@@ -1,3 +1,5 @@
+"""Script to run forge as a cli command"""
+
 import logging
 import sys
 import copy
@@ -15,7 +17,6 @@ def logger_from_args(args):
     logger.setLevel(getattr(logging, args.log_level))
     logger.addHandler(logging.StreamHandler(sys.stdout))
     return logger
-
 
 
 def object_to_str(obj):
@@ -47,9 +48,8 @@ def main(args=None):
                 f"{datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S %Z')}")
 
     safe_log_args(logger, args)
-    
-    print('forge main here again')
 
+    print('forge main here again')
 
     logger.info(f"Finished forge-py: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S %Z')}")  # pylint: disable=W1203
 
