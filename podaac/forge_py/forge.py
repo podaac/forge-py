@@ -5,6 +5,7 @@ import numpy as np
 import alphashape
 from shapely.wkt import dumps
 
+
 def fit_footprint(lon, lat, thinning_fac=100, alpha=0.05, return_xythin=False):
     """
     lon, lon: list/array-like

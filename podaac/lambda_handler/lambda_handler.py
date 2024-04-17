@@ -12,7 +12,7 @@ from cumulus_logger import CumulusLogger
 from cumulus_process import Process, s3
 from podaac.forge_py import forge
 
-cumulus_logger = CumulusLogger('image_generator')
+cumulus_logger = CumulusLogger('forge_py')
 
 
 def clean_tmp(remove_matlibplot=True):
