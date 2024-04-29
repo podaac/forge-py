@@ -1,10 +1,18 @@
+"""Script to run forge as a cli command"""
+# pylint: disable=R0801, E1101
+
 import logging
 import sys
 import copy
+import json
 from datetime import datetime, timezone
+import xarray as xr
+from shapely.wkt import dumps
 
 from podaac.forge_py.args import parse_args
 from podaac.forge_py.file_util import make_absolute
+from podaac.forge_py import forge
+
 
 def logger_from_args(args):
     """Return configured logger from parsed cli args."""
@@ -15,7 +23,6 @@ def logger_from_args(args):
     logger.setLevel(getattr(logging, args.log_level))
     logger.addHandler(logging.StreamHandler(sys.stdout))
     return logger
-
 
 
 def object_to_str(obj):
@@ -47,9 +54,30 @@ def main(args=None):
                 f"{datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S %Z')}")
 
     safe_log_args(logger, args)
-    
-    print('forge main here again')
 
+    config_file = args.config
+    local_file = args.granule
+
+    with open(config_file) as config_f:
+        read_config = json.load(config_f)
+
+    longitude_var = read_config.get('lonVar')
+    latitude_var = read_config.get('latVar')
+    is360 = read_config.get('is360', False)
+
+    # Generate footprint
+    with xr.open_dataset(local_file, decode_times=False) as ds:
+        lon_data = ds[longitude_var]
+        lat_data = ds[latitude_var]
+        alpha_shape = forge.fit_footprint(lon_data, lat_data, is360=is360)
+
+    wkt_representation = dumps(alpha_shape)
+
+    if args.output_file:
+        with open(args.output_file, "w") as json_file:
+            json.dump(wkt_representation, json_file)
+
+    print(wkt_representation)
 
     logger.info(f"Finished forge-py: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S %Z')}")  # pylint: disable=W1203
 

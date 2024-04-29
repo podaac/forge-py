@@ -1,4 +1,4 @@
-"""lambda function used for image generation in aws lambda with cumulus"""
+"""lambda function used for footprint generation in aws lambda with cumulus"""
 
 import json
 import logging
@@ -8,12 +8,13 @@ from shutil import rmtree
 import requests
 
 import botocore
+import xarray as xr
 from cumulus_logger import CumulusLogger
 from cumulus_process import Process, s3
+from shapely.wkt import dumps
 from podaac.forge_py import forge
-from podaac.lambda_handler.cumulus_cli_handler.handlers import activity
 
-cumulus_logger = CumulusLogger('image_generator')
+cumulus_logger = CumulusLogger('forge_py')
 
 
 def clean_tmp(remove_matlibplot=True):
@@ -42,13 +43,13 @@ def clean_tmp(remove_matlibplot=True):
 
 class FootprintGenerator(Process):
     """
-    Image generation class to generate image for a granule file and upload to s3
+    Footprint generation class to generate footprints for a granule file and upload to s3
 
 
     Attributes
     ----------
     processing_regex : str
-        regex for nc file to generate image
+        regex for nc file to generate footprint
     logger: logger
         cumulus logger
     config: dictionary
@@ -57,20 +58,12 @@ class FootprintGenerator(Process):
 
     Methods
     -------
-    upload_file_to_s3('/user/test/test.png', 's3://bucket/path/test.png')
+    upload_file_to_s3('/user/test/test.png', 's3://bucket/path/test.fp')
         uploads a local file to s3
-    get_file_type(test.png, [....])
-        gets the file type for a png
-    get_bucket(test.png, [....], {....})
-        gets the bucket where png to be stored
     process()
-        main function ran for image generation
-    generate_file_dictionary({file_data}, /user/test/test.png, test.png, [....], {....})
-        creates the dictionary data for a generated image
-    image_generate({file_data}, "/tmp/configuration.cfg", "/tmp/palette_dir", "granule.nc" )
-        generates all images for a nc file
+        main function ran for footprint generation
     get_config()
-        downloads configuration file for tig
+        downloads configuration file for footprint
     download_file_from_s3('s3://my-internal-bucket/dataset-config/MODIS_A.2019.cfg', '/tmp/workspace')
         downloads a file from s3 to a directory
     """
@@ -123,55 +116,8 @@ class FootprintGenerator(Process):
             self.logger.error("Error uploading file %s: %s" % (os.path.basename(os.path.basename(filename)), str(ex)), exc_info=True)
             raise ex
 
-    @staticmethod
-    def get_file_type(filename, files):
-        """Get custom file type, default to metadata
-
-        Parameters
-        ----------
-        filename: str
-            filename of a file
-        files: str
-            collection list of files with attributes of specific file type
-        """
-
-        for collection_file in files:
-            if re.match(collection_file.get('regex', '*.'), filename):
-                return collection_file['type']
-        return 'metadata'
-
-    @staticmethod
-    def get_bucket(filename, files, buckets):
-        """Extract the bucket from the files
-
-        Parameters
-        ----------
-        filename: str
-            filename of a file
-        files: list
-            collection list of files with attributes of specific file type
-        buckets: list
-            list of buckets
-
-        Returns
-        ----------
-        str
-            string of the bucket the file to be stored in
-        """
-        bucket_type = "public"
-        for file in files:
-            if re.match(file.get('regex', '*.'), filename):
-                bucket_type = file['bucket']
-                break
-        return buckets[bucket_type]
-
-    @classmethod
-    def cumulus_activity(cls, arn=os.getenv('ACTIVITY_ARN')):
-        """ Run an activity using Cumulus messaging (cumulus-message-adapter) """
-        activity(cls.cumulus_handler, arn)
-
     def get_config(self):
-        """Get configuration file for image generations
+        """Get configuration file for footprint generations
         Returns
         ----------
         str
@@ -197,8 +143,84 @@ class FootprintGenerator(Process):
 
         return cfg_file_full_path
 
+    def footprint_generate(self, file_, config_file, granule_id):
+        """function to generate footprint file and upload to s3
+
+        Parameters
+        ----------
+        file_: list
+            dictionary contain data about a granule file
+        config_file:
+            file path of configuration file that was downloaded from s3
+        granule_id:
+            ganule_id of the granule the footprint are generated for
+
+        Returns
+        ----------
+        list
+            list of dictionary of the footprint information that was uploaded to s3
+        """
+
+        collection = self.config.get('collection').get('name')
+        execution_name = self.config.get('execution_name')
+        output_bucket = os.environ.get('FOOTPRINT_OUTPUT_BUCKET')
+        output_dir = os.environ.get('FOOTPRINT_OUTPUT_DIR')
+
+        input_file = f's3://{file_["bucket"]}/{file_["key"]}'
+        data_type = file_['type']
+
+        if not re.match(f"{self.processing_regex}", input_file) and data_type != "data":
+            return None
+
+        try:
+            local_file = s3.download(input_file, path=self.path)
+        except botocore.exceptions.ClientError as ex:
+            self.logger.error("Error downloading granule from s3: {}".format(ex), exc_info=True)
+            raise ex
+
+        with open(config_file) as config_f:
+            read_config = json.load(config_f)
+
+        longitude_var = read_config.get('lonVar')
+        latitude_var = read_config.get('latVar')
+        is360 = read_config.get('is360', False)
+
+        # Generate footprint
+        with xr.open_dataset(local_file, decode_times=False) as ds:
+            lon_data = ds[longitude_var]
+            lat_data = ds[latitude_var]
+            alpha_shape = forge.fit_footprint(lon_data, lat_data, is360=is360)
+
+        wkt_representation = dumps(alpha_shape)
+
+        wkt_json = {
+            "FOOTPRINT": wkt_representation,
+            "EXTENT": ""
+        }
+
+        # Generate json footprint file
+        footprint_file_name = f"{granule_id}_{execution_name}.fp"
+        footprint_json_file = os.path.join(self.path, footprint_file_name)
+
+        with open(footprint_json_file, "w") as json_file:
+            json.dump(wkt_json, json_file)
+
+        # Upload json footprint file
+        upload_file_dict = {
+            "key": f'{output_dir}/{collection}/{footprint_file_name}',
+            "fileName": footprint_file_name,
+            "bucket": output_bucket,
+            "size": os.path.getsize(footprint_json_file),
+            "type": "metadata",
+        }
+
+        s3_link = f's3://{upload_file_dict["bucket"]}/{upload_file_dict["key"]}'
+        self.upload_file_to_s3(footprint_json_file, s3_link)
+
+        return upload_file_dict
+
     def process(self):
-        """Main process to generate images for granules
+        """Main process to generate footprints for granules
 
         Returns
         ----------
@@ -226,15 +248,13 @@ class FootprintGenerator(Process):
         for granule in granules:
             granule_id = granule['granuleId']
             for file_ in granule['files']:
-
-                uploaded_images = self.image_generate(file_, config_file_path, self.path, granule_id)
-                if uploaded_images:
-                    append_output[granule_id] = append_output.get(granule_id, []) + uploaded_images
+                file_dict = self.footprint_generate(file_, config_file_path, granule_id)
+                if file_dict:
+                    append_output[granule_id] = append_output.get(granule_id, []) + [file_dict]
             if granule_id in append_output:
                 granule['files'] += append_output[granule_id]
 
         return self.input
-
 
     @classmethod
     def handler(cls, event, context=None, path=None, noclean=False):
