@@ -185,11 +185,18 @@ class FootprintGenerator(Process):
         latitude_var = read_config.get('latVar')
         is360 = read_config.get('is360', False)
 
+        thinning_fac = read_config.get('footprint', {}).get('thinning_fac', 100)
+        alpha = read_config.get('footprint', {}).get('alpha', 0.05)
+        strategy = read_config.get('footprint', {}).get('strategy', None)
+
         # Generate footprint
         with xr.open_dataset(local_file, decode_times=False) as ds:
             lon_data = ds[longitude_var]
             lat_data = ds[latitude_var]
-            alpha_shape = forge.fit_footprint(lon_data, lat_data, is360=is360)
+            if strategy == "scatsat":
+                alpha_shape = forge.scatsat_footprint(lon_data, lat_data, thinning_fac=thinning_fac, alpha=alpha, is360=is360)
+            else:
+                alpha_shape = forge.fit_footprint(lon_data, lat_data, thinning_fac=thinning_fac, alpha=alpha, is360=is360)
 
         wkt_representation = dumps(alpha_shape)
 
