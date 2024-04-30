@@ -1,13 +1,45 @@
 """Python footprint generator"""
-
-import xarray as xr
 import numpy as np
 import alphashape
-from shapely.wkt import dumps
+from shapely.geometry import Polygon
 
 
-def fit_footprint(lon, lat, thinning_fac=100, alpha=0.05, return_xythin=False):
+def fit_footprint(lon, lat, thinning_fac=100, alpha=0.05, return_xythin=False, is360=False):
     """
+    lon, lon: list/array-like
+        Latitudes and longitudes.
+    thinning_fac: int
+        Factor to thin out data by (makes alphashape fit faster).
+    alpha: float
+        The alpha parameter passed to alphashape.
+    is360: bool
+        Tell us if the logitude data is between 0-360
+    """
+
+    lon_array = lon
+    if is360:
+        lon_array = ((lon + 180) % 360.0) - 180
+
+    # lat, lon need to be 1D:
+    x = np.array(lon_array).flatten()
+    y = np.array(lat).flatten()
+
+    # Thinning out the number of data points helps alphashape fit faster
+    x_thin = x[np.arange(0, len(x), thinning_fac)]
+    y_thin = y[np.arange(0, len(y), thinning_fac)]
+
+    xy = np.array(list(zip(x_thin, y_thin)))  # Reshape coords to use with alphashape
+    alpha_shape = alphashape.alphashape(xy, alpha=alpha)
+    if return_xythin:
+        return alpha_shape, x_thin, y_thin
+    return alpha_shape
+
+
+def scatsat_footprint(lon, lat, thinning_fac=30, alpha=0.035, return_xythin=False, is360=False):
+    """
+    Fits footprint g-polygon for level 2 data set SCATSAT1_ESDR_L2_WIND_STRESS_V1.1. Uses the
+    alphashape package for the fit, which returns a shapely.geometry.polygon.Polygon object.
+
     lon, lon: list/array-like
         Latitudes and longitudes.
     thinning_fac: int
@@ -16,26 +48,36 @@ def fit_footprint(lon, lat, thinning_fac=100, alpha=0.05, return_xythin=False):
         The alpha parameter passed to alphashape.
     """
     # lat, lon need to be 1D:
-    x = np.array(lon).flatten()
+
+    lon_array = lon
+    if is360:
+        lon_array = ((lon + 180) % 360.0) - 180
+
+    x = np.array(lon_array).flatten()
     y = np.array(lat).flatten()
+
+    # Outlying data near the poles. As a quick fix, remove all data near the poles, at latitudes higher than
+    # 87 degrees. This quick fix has impact on footprint shape.
+    i_lolats = np.where(abs(y) < 86)
+    x = x[i_lolats]
+    y = y[i_lolats]
 
     # Thinning out the number of data points helps alphashape fit faster
     x_thin = x[np.arange(0, len(x), thinning_fac)]
     y_thin = y[np.arange(0, len(y), thinning_fac)]
 
-    xy = np.array(list(zip(x_thin, y_thin))) # Reshape coords to use with alphashape
+    # Fit with alphashape
+    xy = np.array(list(zip(x_thin, y_thin)))  # Reshape coords to use with alphashape
     alpha_shape = alphashape.alphashape(xy, alpha=alpha)
+
+    # Because of the thinning processes, the pole-edges of the footprint are jagged rather than
+    # flat, quick fix this by making all latitude points above 85 degrees a constant value:
+    fp_lon, fp_lat = alpha_shape.exterior.coords.xy
+    fp_lat = np.array(fp_lat)
+    fp_lat[np.where(fp_lat > 82)] = 88
+    fp_lat[np.where(fp_lat < -82)] = -88
+    footprint = Polygon(list(zip(fp_lon, np.asarray(fp_lat, dtype=np.float64))))
+
     if return_xythin:
-        return alpha_shape, x_thin, y_thin
-    return alpha_shape
-
-if __name__ == "__main__":
-
-    FILE = "/Users/simonl/Desktop/forge_py/measures_esdr_scatsat_l2_wind_stress_23433_v1.1_s20210228-054653-e20210228-072612.nc"
-
-    data = xr.open_dataset(FILE)
-
-    alpha_shape_ = fit_footprint(data['lon'], data['lat'], thinning_fac=70, alpha=0.03, return_xythin=False)
-    wkt_representation = dumps(alpha_shape_)
-
-    print(wkt_representation)
+        return footprint, x_thin, y_thin
+    return footprint

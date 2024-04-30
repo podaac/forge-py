@@ -25,8 +25,9 @@ def create_parser():
     """Create a argparse parser for the backfill cli"""
 
     parser = ArgumentParser()
-    parser.add_argument("--config")
-    parser.add_argument("-g", "--granule")
+    parser.add_argument("-c", "--config", required=True)
+    parser.add_argument("-g", "--granule", required=True)
+    parser.add_argument("-o", "--output_file")
     parser.add_argument("--log-file")
     parser.add_argument("--log-level")
 
