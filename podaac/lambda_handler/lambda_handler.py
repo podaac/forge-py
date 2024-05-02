@@ -11,7 +11,6 @@ import botocore
 import xarray as xr
 from cumulus_logger import CumulusLogger
 from cumulus_process import Process, s3
-from shapely.wkt import dumps
 from podaac.forge_py import forge
 
 cumulus_logger = CumulusLogger('forge_py')
@@ -188,17 +187,13 @@ class FootprintGenerator(Process):
         thinning_fac = read_config.get('footprint', {}).get('thinning_fac', 100)
         alpha = read_config.get('footprint', {}).get('alpha', 0.05)
         strategy = read_config.get('footprint', {}).get('strategy', None)
+        simplify = read_config.get('footprint', {}).get('simplify', 0.1)
 
         # Generate footprint
         with xr.open_dataset(local_file, decode_times=False) as ds:
             lon_data = ds[longitude_var]
             lat_data = ds[latitude_var]
-            if strategy == "scatsat":
-                alpha_shape = forge.scatsat_footprint(lon_data, lat_data, thinning_fac=thinning_fac, alpha=alpha, is360=is360)
-            else:
-                alpha_shape = forge.fit_footprint(lon_data, lat_data, thinning_fac=thinning_fac, alpha=alpha, is360=is360)
-
-        wkt_representation = dumps(alpha_shape)
+            wkt_representation = forge.generate_footprint(lon_data, lat_data, thinning_fac=thinning_fac, alpha=alpha, is360=is360, simplify=simplify, strategy=strategy)
 
         wkt_json = {
             "FOOTPRINT": wkt_representation,
