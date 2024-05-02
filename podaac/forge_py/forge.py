@@ -107,5 +107,9 @@ def generate_footprint(lon, lat, thinning_fac=30, alpha=0.035, is360=False, simp
         alpha_shape = fit_footprint(lon, lat, thinning_fac=thinning_fac, alpha=alpha, is360=is360)
     alpha_shape = alpha_shape.simplify(simplify)
 
+    # If the polygon is not valid, attempt to fix self-intersections
+    if not alpha_shape.is_valid:
+        alpha_shape = alpha_shape.buffer(0)
+
     wkt_alphashape = dumps(alpha_shape)
     return wkt_alphashape
