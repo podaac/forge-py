@@ -232,14 +232,29 @@ def test_forge_py():
     test_dir = os.path.dirname(os.path.realpath(__file__))
     input_dir = f'{test_dir}/input'
     nc_file = f'{input_dir}/measures_esdr_scatsat_l2_wind_stress_23433_v1.1_s20210228-054653-e20210228-072612.nc'
+    config_file = f'{input_dir}/SCATSAT1_ESDR_L2_WIND_STRESS_V1.1.cfg'
     result_file = f'{test_dir}/footprint_result.txt'
 
     with open(result_file, "r") as file:
         polygon_shape = file.read()
 
+    with open(config_file) as config_f:
+        read_config = json.load(config_f)
+
+    longitude_var = read_config.get('lonVar')
+    latitude_var = read_config.get('latVar')
+    is360 = read_config.get('is360', False)
+
+    thinning_fac = read_config.get('footprint', {}).get('thinning_fac', 100)
+    alpha = read_config.get('footprint', {}).get('alpha', 0.05)
+    strategy = read_config.get('footprint', {}).get('strategy', None)
+    simplify = read_config.get('footprint', {}).get('simplify', 0.1)
+
+    # Generate footprint
     with xr.open_dataset(nc_file, decode_times=False) as ds:
-        lon_data = ds['lon']
-        lat_data = ds['lat']
-        alpha_shape = forge.fit_footprint(lon_data, lat_data)
-        wkt_alphashape = dumps(alpha_shape)
+        lon_data = ds[longitude_var]
+        lat_data = ds[latitude_var]
+        wkt_alphashape = forge.generate_footprint(lon_data, lat_data, thinning_fac=thinning_fac, alpha=alpha, is360=is360, simplify=simplify, strategy=strategy)
+
         assert wkt_alphashape == polygon_shape
+

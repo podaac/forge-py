@@ -2,9 +2,10 @@
 import numpy as np
 import alphashape
 from shapely.geometry import Polygon
+from shapely.wkt import dumps
 
 
-def fit_footprint(lon, lat, thinning_fac=100, alpha=0.05, return_xythin=False, is360=False):
+def fit_footprint(lon, lat, thinning_fac=100, alpha=0.05, is360=False):
     """
     lon, lon: list/array-like
         Latitudes and longitudes.
@@ -30,12 +31,11 @@ def fit_footprint(lon, lat, thinning_fac=100, alpha=0.05, return_xythin=False, i
 
     xy = np.array(list(zip(x_thin, y_thin)))  # Reshape coords to use with alphashape
     alpha_shape = alphashape.alphashape(xy, alpha=alpha)
-    if return_xythin:
-        return alpha_shape, x_thin, y_thin
+
     return alpha_shape
 
 
-def scatsat_footprint(lon, lat, thinning_fac=30, alpha=0.035, return_xythin=False, is360=False):
+def scatsat_footprint(lon, lat, thinning_fac=30, alpha=0.035, is360=False):
     """
     Fits footprint g-polygon for level 2 data set SCATSAT1_ESDR_L2_WIND_STRESS_V1.1. Uses the
     alphashape package for the fit, which returns a shapely.geometry.polygon.Polygon object.
@@ -46,6 +46,8 @@ def scatsat_footprint(lon, lat, thinning_fac=30, alpha=0.035, return_xythin=Fals
         Factor to thin out data by (makes alphashape fit faster).
     alpha: float
         The alpha parameter passed to alphashape.
+    is360: bool
+        Tell us if the logitude data is between 0-360
     """
     # lat, lon need to be 1D:
 
@@ -78,6 +80,36 @@ def scatsat_footprint(lon, lat, thinning_fac=30, alpha=0.035, return_xythin=Fals
     fp_lat[np.where(fp_lat < -82)] = -88
     footprint = Polygon(list(zip(fp_lon, np.asarray(fp_lat, dtype=np.float64))))
 
-    if return_xythin:
-        return footprint, x_thin, y_thin
     return footprint
+
+
+def generate_footprint(lon, lat, thinning_fac=30, alpha=0.035, is360=False, simplify=0.1, strategy=None):
+    """
+    Generates footprint by calling different footprint strategies
+
+    lon, lon: list/array-like
+        Latitudes and longitudes.
+    thinning_fac: int
+        Factor to thin out data by (makes alphashape fit faster).
+    alpha: float
+        The alpha parameter passed to alphashape.
+    is360: bool
+        Tell us if the logitude data is between 0-360
+    simplify:
+        simplify polygon factor
+    strategy:
+        What footprint strategy to use
+    """
+
+    if strategy == "scatsat":
+        alpha_shape = scatsat_footprint(lon, lat, thinning_fac=thinning_fac, alpha=alpha, is360=is360)
+    else:
+        alpha_shape = fit_footprint(lon, lat, thinning_fac=thinning_fac, alpha=alpha, is360=is360)
+    alpha_shape = alpha_shape.simplify(simplify)
+
+    # If the polygon is not valid, attempt to fix self-intersections
+    if not alpha_shape.is_valid:
+        alpha_shape = alpha_shape.buffer(0)
+
+    wkt_alphashape = dumps(alpha_shape)
+    return wkt_alphashape
