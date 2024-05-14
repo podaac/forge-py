@@ -8,7 +8,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- Initial implementation for forge-py to footprint SCATSAT1_ESDR_L2_WIND_STRESS_V1.1
 ### Deprecated
 ### Removed
 ### Fixed
