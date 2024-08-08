@@ -8,8 +8,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+### Deprecated
+### Removed
+### Fixed
+
+
+## [0.2.0]
+
+### Added
 - Added cowvr strategy
-- Update default footprint algorithm
+- Added new default footprint algorithm
 ### Deprecated
 ### Removed
 ### Fixed
