@@ -189,8 +189,8 @@ class FootprintGenerator(Process):
         strategy = read_config.get('footprint', {}).get('strategy', None)
         simplify = read_config.get('footprint', {}).get('simplify', 0.1)
         group = read_config.get('footprint', {}).get('group')
-        cutoff_lat = read_config.get('cutoff_lat', None)
-        smooth_poles = read_config.get('smooth_poles', None)
+        cutoff_lat = read_config.get('footprint', {}).get('cutoff_lat', None)
+        smooth_poles = read_config.get('footprint', {}).get('smooth_poles', None)
 
         # Generate footprint
         with xr.open_dataset(local_file, group=group, decode_times=False) as ds:
