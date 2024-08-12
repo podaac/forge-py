@@ -72,11 +72,8 @@ def main(args=None):
     cutoff_lat = read_config.get('footprint', {}).get('cutoff_lat', None)
     smooth_poles = read_config.get('footprint', {}).get('smooth_poles', None)
 
-    print(cutoff_lat)
-    print(smooth_poles)
-
     # Generate footprint
-    with xr.open_dataset(local_file, decode_times=False) as ds:
+    with xr.open_dataset(local_file, group=group, decode_times=False) as ds:
         lon_data = ds[longitude_var]
         lat_data = ds[latitude_var]
         wkt_representation = forge.generate_footprint(lon_data, lat_data, thinning_fac=thinning_fac, alpha=alpha, is360=is360, simplify=simplify,
