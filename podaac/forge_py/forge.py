@@ -162,12 +162,9 @@ def fit_footprint(
         footprint.
     """
 
-    # Prep arrays:
-    x = np.array(lon).flatten()
-    y = np.array(lat).flatten()
-    inan = np.isnan(x*y)
-    x = x[~inan]
-    y = y[~inan]
+    x, y = np.array(lon).flatten(), np.array(lat).flatten()
+    mask = ~np.isnan(x) & ~np.isnan(y)
+    x, y = x[mask], y[mask]
 
     # Optional thinning (typically helps alphashape fit faster):
     if thinning is not None:
@@ -195,11 +192,17 @@ def fit_footprint(
     def pole_smoother(fp_lon, fp_lat, lat_thresh, lat_target):
         """
         Takes longitude, latitude array-likes from a single Polygon representing a footprint.
+        Smooths the latitude values that exceed a certain threshold by clamping them to a target value.
         """
-        fp_lat = np.array(fp_lat)
-        fp_lat[np.where(fp_lat > lat_thresh)] = lat_target
-        fp_lat[np.where(fp_lat < -lat_thresh)] = -lat_target
-        return Polygon(list(zip(fp_lon, np.asarray(fp_lat, dtype=np.float64))))
+        # Convert to numpy arrays if they are not already
+        fp_lat = np.asarray(fp_lat, dtype=np.float64)
+
+        # Apply thresholding using boolean indexing
+        fp_lat[fp_lat > lat_thresh] = lat_target
+        fp_lat[fp_lat < -lat_thresh] = -lat_target
+
+        # Return the smoothed polygon
+        return Polygon(zip(fp_lon, fp_lat))
 
     if smooth_poles is not None:
         if isinstance(alpha_shape, shapely.geometry.polygon.Polygon):
