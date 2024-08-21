@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Added cowvr strategy
 - Update default footprint algorithm
+- Poetry update python libraries
 ### Deprecated
 ### Removed
 ### Fixed
