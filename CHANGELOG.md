@@ -8,8 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- Added cowvr strategy
-- Update default footprint algorithm
+- Update default footprint algorithm, now there is only one algorithm for forge-py
 - Poetry update python libraries
 ### Deprecated
 ### Removed

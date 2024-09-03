@@ -7,6 +7,7 @@ import copy
 import json
 from datetime import datetime, timezone
 import xarray as xr
+import numpy as np
 
 from podaac.forge_py.args import parse_args
 from podaac.forge_py.file_util import make_absolute
@@ -71,13 +72,14 @@ def main(args=None):
     group = read_config.get('footprint', {}).get('group')
     cutoff_lat = read_config.get('footprint', {}).get('cutoff_lat', None)
     smooth_poles = read_config.get('footprint', {}).get('smooth_poles', None)
+    fill_value = read_config.get('footprint', {}).get('fill_value', np.nan)
 
     # Generate footprint
     with xr.open_dataset(local_file, group=group, decode_times=False) as ds:
         lon_data = ds[longitude_var]
         lat_data = ds[latitude_var]
         wkt_representation = forge.generate_footprint(lon_data, lat_data, thinning_fac=thinning_fac, alpha=alpha, is360=is360, simplify=simplify,
-                                                      cutoff_lat=cutoff_lat, smooth_poles=smooth_poles, strategy=strategy)
+                                                      cutoff_lat=cutoff_lat, smooth_poles=smooth_poles, strategy=strategy, fill_value=fill_value)
 
     if args.output_file:
         with open(args.output_file, "w") as json_file:
