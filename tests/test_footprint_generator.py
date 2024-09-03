@@ -269,7 +269,6 @@ def test_forge_py():
     longitude_var = read_config.get('lonVar')
     latitude_var = read_config.get('latVar')
     is360 = read_config.get('is360', False)
-
     thinning_fac = read_config.get('footprint', {}).get('thinning_fac', 100)
     alpha = read_config.get('footprint', {}).get('alpha', 0.05)
     strategy = read_config.get('footprint', {}).get('strategy', None)

@@ -8,6 +8,7 @@ from shutil import rmtree
 import requests
 
 import botocore
+import numpy as np
 import xarray as xr
 from cumulus_logger import CumulusLogger
 from cumulus_process import Process, s3
@@ -191,13 +192,14 @@ class FootprintGenerator(Process):
         group = read_config.get('footprint', {}).get('group')
         cutoff_lat = read_config.get('footprint', {}).get('cutoff_lat', None)
         smooth_poles = read_config.get('footprint', {}).get('smooth_poles', None)
+        fill_value = read_config.get('footprint', {}).get('fill_value', np.nan)
 
         # Generate footprint
         with xr.open_dataset(local_file, group=group, decode_times=False) as ds:
             lon_data = ds[longitude_var]
             lat_data = ds[latitude_var]
             wkt_representation = forge.generate_footprint(lon_data, lat_data, thinning_fac=thinning_fac, alpha=alpha, is360=is360, simplify=simplify,
-                                                          cutoff_lat=cutoff_lat, smooth_poles=smooth_poles, strategy=strategy)
+                                                          cutoff_lat=cutoff_lat, smooth_poles=smooth_poles, strategy=strategy, fill_value=fill_value)
 
         wkt_json = {
             "FOOTPRINT": wkt_representation,

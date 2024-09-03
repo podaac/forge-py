@@ -23,13 +23,13 @@ netcdf4 = "^1.6.5"
 pytest = "^8.0.1"
 flake8 = "^7.0.0"
 pylint = "^3.0.3"
-pytest-cov = "^4.1.0"
+pytest-cov = "^5.0.0"
 
 [tool.poetry.scripts]
 forge-py = "podaac.forge_py.cli:main"
 
 [tool.poetry.group.dev.dependencies]
-moto = "^5.0.5"
+moto = "^5.0.13"
 mock = "^5.1.0"
 
 [build-system]
