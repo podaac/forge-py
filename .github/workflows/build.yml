@@ -405,12 +405,12 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           context: .
-          file: ./docker/lambdaDockerfileArm
+          file: ./docker/lambdaDockerfile
           push: true
           pull: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          platforms: linux/arm/v7
+          platforms: linux/amd64
           build-args: |
             SOURCE=${{ env.pyproject_name }}==${{ env.the_version }}
 
