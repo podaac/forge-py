@@ -6,8 +6,40 @@ from shapely.wkt import dumps
 import shapely
 
 
+def get_outer_edges(arr):
+    """Function to get the outer edge points of a 2d array"""
+
+    top_edge = arr[0, :]  # First row
+    bottom_edge = arr[-1, ::-1]  # Last row (reversed)
+
+    left_edge = arr[1:-1, 0]  # First column (excluding first and last rows)
+    right_edge = arr[1:-1, -1][::-1]  # Last column (excluding first and last rows, reversed)
+
+    # Combine all edges into a single array
+    return np.concatenate((top_edge, right_edge, bottom_edge, left_edge))
+
+
+def remove_outer_nan_edges(arr):
+    """Function to remove nans around the edges of a 2d array"""
+
+    # Check and remove rows from the top and bottom that are all NaN
+    while np.isnan(arr[0, :]).all():
+        arr = arr[1:, :]
+    while np.isnan(arr[-1, :]).all():
+        arr = arr[:-1, :]
+
+    # Check and remove columns from the left and right that are all NaN
+    while np.isnan(arr[:, 0]).all():
+        arr = arr[:, 1:]
+    while np.isnan(arr[:, -1]).all():
+        arr = arr[:, :-1]
+
+    return arr
+
+
 def generate_footprint(lon, lat, thinning_fac=30, alpha=0.05, is360=False, simplify=0.1,
-                       strategy=None, cutoff_lat=None, smooth_poles=None, fill_value=np.nan):  # pylint: disable=unused-argument
+                       strategy=None, cutoff_lat=None, smooth_poles=None, fill_value=np.nan,  # pylint: disable=unused-argument
+                       thinning_method='standard'):
     """
     Generates footprint by calling different footprint strategies
 
@@ -36,13 +68,15 @@ def generate_footprint(lon, lat, thinning_fac=30, alpha=0.05, is360=False, simpl
         Fill value in the latitude, longitude arrays. Default = np.nan; the default
         will work even if the data have no NAN's. Future functionality will accommodate
         multiple possible fill values.
+    thinning_method string:
+        Method to thing out the array
     """
 
     # Transform lon array if it is 360
     lon_array = lon
     if is360:
         lon_array = ((lon + 180) % 360.0) - 180
-    thinning = {'method': 'standard', 'value': thinning_fac}
+    thinning = {'method': thinning_method, 'value': thinning_fac}
     alpha_shape = fit_footprint(lon_array, lat, alpha=alpha, thinning=thinning, cutoff_lat=cutoff_lat, smooth_poles=smooth_poles, fill_value=fill_value)
     alpha_shape = alpha_shape.simplify(simplify)
 
@@ -94,9 +128,9 @@ def fit_footprint(
         footprint.
     """
 
-    # Prep arrays and remove missing values:
     x = np.array(lon).flatten()
     y = np.array(lat).flatten()
+
     if fill_value is np.nan:
         inan = np.isnan(x*y)
     else:
@@ -109,6 +143,17 @@ def fit_footprint(
         if thinning["method"] == "standard":
             x_thin = x[np.arange(0, len(x), thinning["value"])]
             y_thin = y[np.arange(0, len(y), thinning["value"])]
+        elif thinning["method"] == "outer-edges":
+            new_lon = remove_outer_nan_edges(lon)
+            new_lat = remove_outer_nan_edges(lat)
+            outer_lon_edges = get_outer_edges(new_lon).flatten()
+            outer_lat_edges = get_outer_edges(new_lat).flatten()
+
+            x_thin = x[np.arange(0, len(x), thinning["value"])]
+            y_thin = y[np.arange(0, len(y), thinning["value"])]
+
+            x_thin = np.concatenate((outer_lon_edges, x_thin))
+            y_thin = np.concatenate((outer_lat_edges, y_thin))
     else:
         x_thin = x
         y_thin = y
