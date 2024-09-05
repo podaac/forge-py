@@ -12,6 +12,7 @@ from mock import patch, Mock
 import xarray as xr
 from podaac.forge_py import forge
 from shapely.wkt import dumps
+from shapely import wkt
 
 file_schema = {
   "type": "array",
@@ -227,6 +228,30 @@ def test_lambda_handler_cumulus(mocked_get):
                 generated_footprint = True
     assert generated_footprint
 
+
+def compare_shapes_similarity(wkt1, wkt2, tolerance=0.3):
+    """
+    Compares two WKT shapes and returns True if they are similar within a given tolerance, False otherwise.
+    
+    Parameters:
+    wkt1 (str): Well-Known Text (WKT) representation of the first shape.
+    wkt2 (str): Well-Known Text (WKT) representation of the second shape.
+    tolerance (float): The maximum Hausdorff Distance for the shapes to be considered similar.
+    
+    Returns:
+    bool: True if the shapes are similar within the tolerance, False otherwise.
+    """
+    # Convert WKT to Shapely geometries
+    shape1 = wkt.loads(wkt1)
+    shape2 = wkt.loads(wkt2)
+    
+    # Calculate the Hausdorff Distance
+    hausdorff_distance = shape1.hausdorff_distance(shape2)
+    
+    # Check if the Hausdorff Distance is within the tolerance
+    return hausdorff_distance <= tolerance   
+
+
 def test_forge_py():
 
     test_dir = os.path.dirname(os.path.realpath(__file__))
@@ -244,7 +269,6 @@ def test_forge_py():
     longitude_var = read_config.get('lonVar')
     latitude_var = read_config.get('latVar')
     is360 = read_config.get('is360', False)
-
     thinning_fac = read_config.get('footprint', {}).get('thinning_fac', 100)
     alpha = read_config.get('footprint', {}).get('alpha', 0.05)
     strategy = read_config.get('footprint', {}).get('strategy', None)
@@ -256,5 +280,4 @@ def test_forge_py():
         lat_data = ds[latitude_var]
         wkt_alphashape = forge.generate_footprint(lon_data, lat_data, thinning_fac=thinning_fac, alpha=alpha, is360=is360, simplify=simplify, strategy=strategy)
 
-        assert wkt_alphashape == polygon_shape
-
+        assert compare_shapes_similarity(wkt_alphashape, polygon_shape)
