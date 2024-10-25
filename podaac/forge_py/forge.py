@@ -30,7 +30,8 @@ def thinning_bin_avg(x, y, rx, ry):
 
 
 def generate_footprint(lon, lat, thinning_fac=30, alpha=0.05, is360=False, simplify=0.1,
-                       strategy=None, cutoff_lat=None, smooth_poles=None, fill_value=np.nan):  # pylint: disable=unused-argument
+                       strategy=None, cutoff_lat=None, smooth_poles=None, fill_value=np.nan,
+                       thinning_method="standard"):  # pylint: disable=unused-argument
     """
     Generates footprint by calling different footprint strategies
 
@@ -65,7 +66,7 @@ def generate_footprint(lon, lat, thinning_fac=30, alpha=0.05, is360=False, simpl
     lon_array = lon
     if is360:
         lon_array = ((lon + 180) % 360.0) - 180
-    thinning = {'method': 'standard', 'value': thinning_fac}
+    thinning = {'method': thinning_method, 'value': thinning_fac}
     alpha_shape = fit_footprint(lon_array, lat, alpha=alpha, thinning=thinning, cutoff_lat=cutoff_lat, smooth_poles=smooth_poles, fill_value=fill_value)
     alpha_shape = alpha_shape.simplify(simplify)
 

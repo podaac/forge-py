@@ -186,6 +186,7 @@ class FootprintGenerator(Process):
         is360 = read_config.get('is360', False)
 
         thinning_fac = read_config.get('footprint', {}).get('thinning_fac', 100)
+        thinning_method = read_config.get('footprint', {}).get('thinning_method', 'standard')
         alpha = read_config.get('footprint', {}).get('alpha', 0.05)
         strategy = read_config.get('footprint', {}).get('strategy', None)
         simplify = read_config.get('footprint', {}).get('simplify', 0.1)
@@ -199,7 +200,8 @@ class FootprintGenerator(Process):
             lon_data = ds[longitude_var]
             lat_data = ds[latitude_var]
             wkt_representation = forge.generate_footprint(lon_data, lat_data, thinning_fac=thinning_fac, alpha=alpha, is360=is360, simplify=simplify,
-                                                          cutoff_lat=cutoff_lat, smooth_poles=smooth_poles, strategy=strategy, fill_value=fill_value)
+                                                          cutoff_lat=cutoff_lat, smooth_poles=smooth_poles, strategy=strategy, fill_value=fill_value,
+                                                          thinning_method=thinning_method)
 
         wkt_json = {
             "FOOTPRINT": wkt_representation,
