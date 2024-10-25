@@ -4,6 +4,29 @@ import alphashape
 from shapely.geometry import Polygon, MultiPolygon
 from shapely.wkt import dumps
 import shapely
+import pandas as pd
+
+
+def thinning_bin_avg(x, y, rx, ry):
+    """
+    One of the options for fit_footprint().
+    Thin out x, y data via binning and averaging method.
+
+    Inputs
+    ------
+    x, y: 1d array-like.
+        Data
+    rx, ry: scalars.
+        Nearest values to round x and y to. E.g. if rx=2, then x will be rounded to
+        nearest 0, 2, 4, 6, ... . If rx=0.5, then x will be rounded to nearest
+        0, 0.5, 1, 1.5, ... .
+    """
+
+    xy = pd.DataFrame({"x": x, "y": y})
+    x_rounded = rx*np.round(xy["x"]/rx)
+    y_rounded = ry*np.round(xy["y"]/ry)
+    xy_thinned = xy.groupby(by=[x_rounded, y_rounded]).mean()
+    return xy_thinned["x"].values, xy_thinned["y"].values
 
 
 def generate_footprint(lon, lat, thinning_fac=30, alpha=0.05, is360=False, simplify=0.1,
@@ -109,6 +132,9 @@ def fit_footprint(
         if thinning["method"] == "standard":
             x_thin = x[np.arange(0, len(x), thinning["value"])]
             y_thin = y[np.arange(0, len(y), thinning["value"])]
+        if thinning["method"] == "bin_avg":
+            rx, ry = thinning["value"][0], thinning["value"][1]
+            x_thin, y_thin = thinning_bin_avg(x, y, rx, ry)
     else:
         x_thin = x
         y_thin = y
