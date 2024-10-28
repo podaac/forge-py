@@ -185,23 +185,40 @@ class FootprintGenerator(Process):
         latitude_var = read_config.get('latVar')
         is360 = read_config.get('is360', False)
 
-        thinning_fac = read_config.get('footprint', {}).get('thinning_fac', 100)
-        thinning_method = read_config.get('footprint', {}).get('thinning_method', 'standard')
-        alpha = read_config.get('footprint', {}).get('alpha', 0.05)
-        strategy = read_config.get('footprint', {}).get('strategy', None)
-        simplify = read_config.get('footprint', {}).get('simplify', 0.1)
-        group = read_config.get('footprint', {}).get('group')
-        cutoff_lat = read_config.get('footprint', {}).get('cutoff_lat', None)
-        smooth_poles = read_config.get('footprint', {}).get('smooth_poles', None)
-        fill_value = read_config.get('footprint', {}).get('fill_value', np.nan)
+        # Get footprint configuration
+        footprint_config = read_config.get('footprint', {})
+
+        thinning_fac = footprint_config.get('thinning_fac', 100)
+        thinning_method = footprint_config.get('thinning_method', 'standard')
+        alpha = footprint_config.get('alpha', 0.05)
+        strategy = footprint_config.get('strategy', None)
+        simplify = footprint_config.get('simplify', 0.1)
+        group = footprint_config.get('group')
+        cutoff_lat = footprint_config.get('cutoff_lat', None)
+        smooth_poles = footprint_config.get('smooth_poles', None)
+        fill_value = footprint_config.get('fill_value', np.nan)
+        width = footprint_config.get('width', 3600)
+        height = footprint_config.get('height', 1800)
 
         # Generate footprint
         with xr.open_dataset(local_file, group=group, decode_times=False) as ds:
             lon_data = ds[longitude_var]
             lat_data = ds[latitude_var]
-            wkt_representation = forge.generate_footprint(lon_data, lat_data, thinning_fac=thinning_fac, alpha=alpha, is360=is360, simplify=simplify,
-                                                          cutoff_lat=cutoff_lat, smooth_poles=smooth_poles, strategy=strategy, fill_value=fill_value,
-                                                          thinning_method=thinning_method)
+            wkt_representation = forge.generate_footprint(
+                lon_data, lat_data,
+                thinning_fac=thinning_fac,
+                alpha=alpha,
+                is360=is360,
+                simplify=simplify,
+                cutoff_lat=cutoff_lat,
+                smooth_poles=smooth_poles,
+                strategy=strategy,
+                fill_value=fill_value,
+                thinning_method=thinning_method,
+                width=width,
+                height=height,
+                path=self.path
+            )
 
         wkt_json = {
             "FOOTPRINT": wkt_representation,
@@ -238,11 +255,6 @@ class FootprintGenerator(Process):
             Payload that is returned to the cma which is a dictionary with list of granules
         """
 
-        config_file_path = self.get_config()
-
-        granules = self.input['granules']
-        append_output = {}
-
         if self.kwargs.get('context', None):
             try:
                 aws_request_id = self.kwargs.get('context').aws_request_id
@@ -254,6 +266,11 @@ class FootprintGenerator(Process):
                 self.logger.info(message)
             except AttributeError:
                 pass
+
+        config_file_path = self.get_config()
+
+        granules = self.input['granules']
+        append_output = {}
 
         for granule in granules:
             granule_id = granule['granuleId']

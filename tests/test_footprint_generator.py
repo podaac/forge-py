@@ -281,3 +281,40 @@ def test_forge_py():
         wkt_alphashape = forge.generate_footprint(lon_data, lat_data, thinning_fac=thinning_fac, alpha=alpha, is360=is360, simplify=simplify, strategy=strategy)
 
         assert compare_shapes_similarity(wkt_alphashape, polygon_shape)
+
+
+def test_forge_py_open_cv():
+
+    test_dir = os.path.dirname(os.path.realpath(__file__))
+    input_dir = f'{test_dir}/input'
+    nc_file = f'{input_dir}/measures_esdr_scatsat_l2_wind_stress_23433_v1.1_s20210228-054653-e20210228-072612.nc'
+    config_file = f'{input_dir}/SCATSAT1_ESDR_L2_WIND_STRESS_V1.1.cfg'
+    result_file = f'{test_dir}/footprint_result_open_cv.txt'
+
+    with open(result_file, "r") as file:
+        polygon_shape = file.read()
+
+    with open(config_file) as config_f:
+        read_config = json.load(config_f)
+
+    longitude_var = read_config.get('lonVar')
+    latitude_var = read_config.get('latVar')
+    is360 = read_config.get('is360', False)
+    thinning_fac = read_config.get('footprint', {}).get('thinning_fac', 100)
+    alpha = read_config.get('footprint', {}).get('alpha', 0.05)
+    strategy = "open_cv"
+    simplify = read_config.get('footprint', {}).get('simplify', 0.1)
+    width = read_config.get('footprint', {}).get('width', 3600)
+    height = read_config.get('footprint', {}).get('height', 1800)
+    path = test_dir
+
+    # Generate footprint
+    with xr.open_dataset(nc_file, decode_times=False) as ds:
+        lon_data = ds[longitude_var]
+        lat_data = ds[latitude_var]
+        wkt_alphashape = forge.generate_footprint(lon_data, lat_data, thinning_fac=thinning_fac, alpha=alpha, is360=is360, simplify=simplify, strategy=strategy, path=path)
+        assert compare_shapes_similarity(wkt_alphashape, polygon_shape)
+
+
+
+

@@ -5,6 +5,7 @@ from shapely.geometry import Polygon, MultiPolygon
 from shapely.wkt import dumps
 import shapely
 import pandas as pd
+from podaac.forge_py import open_cv_footprint
 
 
 def thinning_bin_avg(x, y, rx, ry):
@@ -30,8 +31,8 @@ def thinning_bin_avg(x, y, rx, ry):
 
 
 def generate_footprint(lon, lat, thinning_fac=30, alpha=0.05, is360=False, simplify=0.1,
-                       strategy=None, cutoff_lat=None, smooth_poles=None, fill_value=np.nan,  # pylint: disable=unused-argument
-                       thinning_method="standard"):
+                       strategy=None, cutoff_lat=None, smooth_poles=None, fill_value=np.nan,
+                       thinning_method="standard", width=3600, height=1800, path=None):
     """
     Generates footprint by calling different footprint strategies
 
@@ -67,6 +68,10 @@ def generate_footprint(lon, lat, thinning_fac=30, alpha=0.05, is360=False, simpl
     if is360:
         lon_array = ((lon + 180) % 360.0) - 180
     thinning = {'method': thinning_method, 'value': thinning_fac}
+    if strategy == "open_cv":
+        alpha_shape_wkt = open_cv_footprint.footprint_open_cv(lon_array, lat, width=width, height=height, path=path)
+        return alpha_shape_wkt
+
     alpha_shape = fit_footprint(lon_array, lat, alpha=alpha, thinning=thinning, cutoff_lat=cutoff_lat, smooth_poles=smooth_poles, fill_value=fill_value)
     alpha_shape = alpha_shape.simplify(simplify)
 
