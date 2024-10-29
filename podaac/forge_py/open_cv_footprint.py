@@ -7,6 +7,7 @@ import cv2
 from shapely.geometry import Polygon, MultiPolygon
 from PIL import Image
 
+
 def read_and_threshold_image(image_path, threshold_value=185):
     """
     Reads an image from the specified file path, converts it to grayscale, and applies a binary threshold.
@@ -26,6 +27,7 @@ def read_and_threshold_image(image_path, threshold_value=185):
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     _, img_th = cv2.threshold(gray, threshold_value, 255, cv2.THRESH_BINARY)
     return img_th
+
 
 def apply_morphological_operations(image, kernel_size=(5, 5)):
     """
@@ -48,6 +50,7 @@ def apply_morphological_operations(image, kernel_size=(5, 5)):
     img_cleaned = cv2.morphologyEx(img_cleaned, cv2.MORPH_OPEN, kernel)  # Remove small noise
     return img_cleaned
 
+
 def pixel_to_lonlat(x, y, width, height):
     """
     Converts pixel coordinates (x, y) in an image to geographic coordinates (longitude, latitude).
@@ -69,6 +72,7 @@ def pixel_to_lonlat(x, y, width, height):
     lon = x * (360 / width) - 180
     lat = 90 - y * (180 / height)
     return lon, lat
+
 
 def contour_to_lonlat(contour, width, height):
     """
@@ -96,6 +100,7 @@ def contour_to_lonlat(contour, width, height):
         lon, lat = pixel_to_lonlat(x, y, width, height)
         lonlat_contour.append([lon, lat])
     return np.array(lonlat_contour)
+
 
 def create_polygon_from_contours(outer_contour, holes, width, height):
     """
@@ -184,6 +189,7 @@ def process_multipolygons(contours, hierarchy, width, height):
     if len(polygons) == 1:
         return polygons[0]
     return None
+
 
 def process_mask(image, kernel_size=(20, 20)):
     """
