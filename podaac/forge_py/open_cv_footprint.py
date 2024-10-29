@@ -445,8 +445,8 @@ def footprint_open_cv(lon, lat, width=3600, height=1800, path=None, threshold_va
 
     if polygon_structure is not None:
         simplified_polygon = simplify_polygon(polygon_structure)
-        clockwise = ensure_counter_clockwise(simplified_polygon)
-        reduced_precision = reduce_precision(clockwise)
-        return reduced_precision.wkt
+        reduced_precision = reduce_precision(simplified_polygon)
+        counter_clockwise = ensure_counter_clockwise(reduced_precision)
+        return counter_clockwise.wkt
 
     raise Exception("No valid polygons found.")
