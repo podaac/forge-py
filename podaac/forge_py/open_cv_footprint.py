@@ -4,8 +4,63 @@
 import uuid
 import numpy as np
 import cv2
+from shapely import wkt
 from shapely.geometry import Polygon, MultiPolygon
 from PIL import Image
+
+
+def ensure_counter_clockwise(geometry):
+    """
+    Ensure that a given polygon or multipolygon is represented in counter-clockwise order.
+
+    This function accepts a WKT (Well-Known Text) string or a Shapely Polygon/MultiPolygon
+    object. If the input is in a clockwise orientation, it will reverse the coordinates
+    to ensure counter-clockwise ordering.
+
+    Parameters:
+        geometry (str or Polygon or MultiPolygon):
+            The input geometry to be checked and potentially corrected. This can be:
+            - A WKT string representing a Polygon or MultiPolygon.
+            - A Shapely Polygon object.
+            - A Shapely MultiPolygon object.
+
+    Returns:
+        str: The WKT representation of the corrected geometry in counter-clockwise order.
+
+    Raises:
+        ValueError: If the input is not a WKT string, Polygon, or MultiPolygon.
+
+    Example:
+        original_wkt_polygon = "POLYGON ((0 0, 1 1, 1 0, 0 0))"
+        corrected_wkt = ensure_counter_clockwise(original_wkt_polygon)
+
+        # The returned WKT will be in counter-clockwise order.
+    """
+    if isinstance(geometry, str):
+        geometry = wkt.loads(geometry)
+
+    # Function to ensure a single polygon is counter-clockwise
+    def correct_polygon(polygon):
+        if not polygon.exterior.is_ccw:
+            # Reverse the exterior coordinates
+            exterior = list(polygon.exterior.coords)[::-1]
+            # Reverse the interior coordinates for each interior polygon
+            interiors = [list(interior.coords)[::-1] for interior in polygon.interiors]
+            return Polygon(exterior, interiors)
+        return polygon
+
+    # If the input is a MultiPolygon, process each polygon
+    if isinstance(geometry, MultiPolygon):
+        corrected_polygons = [correct_polygon(polygon) for polygon in geometry.geoms]
+        corrected_geometry = MultiPolygon(corrected_polygons)
+    # If the input is a single Polygon, correct it directly
+    elif isinstance(geometry, Polygon):
+        corrected_geometry = correct_polygon(geometry)
+    else:
+        raise ValueError("Input must be a WKT string, Polygon, or MultiPolygon.")
+
+    # Return the WKT representation of the corrected geometry
+    return wkt.dumps(corrected_geometry)
 
 
 def read_and_threshold_image(image_path, threshold_value=185):
@@ -384,6 +439,7 @@ def footprint_open_cv(lon, lat, width=3600, height=1800, path=None, threshold_va
     if polygon_structure is not None:
         simplified_polygon = simplify_polygon(polygon_structure)
         reduced_precision = reduce_precision(simplified_polygon)
-        return reduced_precision.wkt
+        return_wkt = ensure_counter_clockwise(reduced_precision.wkt)
+        return return_wkt
 
     raise Exception("No valid polygons found.")
