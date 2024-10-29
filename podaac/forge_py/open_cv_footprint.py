@@ -25,7 +25,7 @@ def ensure_counter_clockwise(geometry):
             - A Shapely MultiPolygon object.
 
     Returns:
-        str: The WKT representation of the corrected geometry in counter-clockwise order.
+        str: The corrected geometry in counter-clockwise order.
 
     Raises:
         ValueError: If the input is not a WKT string, Polygon, or MultiPolygon.
@@ -34,7 +34,7 @@ def ensure_counter_clockwise(geometry):
         original_wkt_polygon = "POLYGON ((0 0, 1 1, 1 0, 0 0))"
         corrected_wkt = ensure_counter_clockwise(original_wkt_polygon)
 
-        # The returned WKT will be in counter-clockwise order.
+        # The returned geometry will be in counter-clockwise order.
     """
     if isinstance(geometry, str):
         geometry = wkt.loads(geometry)
@@ -60,7 +60,7 @@ def ensure_counter_clockwise(geometry):
         raise ValueError("Input must be a WKT string, Polygon, or MultiPolygon.")
 
     # Return the WKT representation of the corrected geometry
-    return wkt.dumps(corrected_geometry)
+    return corrected_geometry
 
 
 def read_and_threshold_image(image_path, threshold_value=185):
@@ -438,8 +438,8 @@ def footprint_open_cv(lon, lat, width=3600, height=1800, path=None, threshold_va
 
     if polygon_structure is not None:
         simplified_polygon = simplify_polygon(polygon_structure)
-        reduced_precision = reduce_precision(simplified_polygon)
-        return_wkt = ensure_counter_clockwise(reduced_precision.wkt)
-        return return_wkt
+        clockwise = ensure_counter_clockwise(simplified_polygon)
+        reduced_precision = reduce_precision(clockwise)
+        return reduced_precision.wkt
 
     raise Exception("No valid polygons found.")
