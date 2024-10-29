@@ -69,7 +69,7 @@ def generate_footprint(lon, lat, thinning_fac=30, alpha=0.05, is360=False, simpl
         lon_array = ((lon + 180) % 360.0) - 180
     thinning = {'method': thinning_method, 'value': thinning_fac}
     if strategy == "open_cv":
-        alpha_shape_wkt = open_cv_footprint.footprint_open_cv(lon_array, lat, width=width, height=height, path=path)
+        alpha_shape_wkt = open_cv_footprint.footprint_open_cv(lon, lat, width=width, height=height, path=path)
         return alpha_shape_wkt
 
     alpha_shape = fit_footprint(lon_array, lat, alpha=alpha, thinning=thinning, cutoff_lat=cutoff_lat, smooth_poles=smooth_poles, fill_value=fill_value)

@@ -7,7 +7,6 @@ import cv2
 from shapely.geometry import Polygon, MultiPolygon
 from PIL import Image
 
-
 def read_and_threshold_image(image_path, threshold_value=185):
     """
     Reads an image from the specified file path, converts it to grayscale, and applies a binary threshold.
@@ -27,7 +26,6 @@ def read_and_threshold_image(image_path, threshold_value=185):
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     _, img_th = cv2.threshold(gray, threshold_value, 255, cv2.THRESH_BINARY)
     return img_th
-
 
 def apply_morphological_operations(image, kernel_size=(5, 5)):
     """
@@ -50,7 +48,6 @@ def apply_morphological_operations(image, kernel_size=(5, 5)):
     img_cleaned = cv2.morphologyEx(img_cleaned, cv2.MORPH_OPEN, kernel)  # Remove small noise
     return img_cleaned
 
-
 def pixel_to_lonlat(x, y, width, height):
     """
     Converts pixel coordinates (x, y) in an image to geographic coordinates (longitude, latitude).
@@ -72,7 +69,6 @@ def pixel_to_lonlat(x, y, width, height):
     lon = x * (360 / width) - 180
     lat = 90 - y * (180 / height)
     return lon, lat
-
 
 def contour_to_lonlat(contour, width, height):
     """
@@ -100,7 +96,6 @@ def contour_to_lonlat(contour, width, height):
         lon, lat = pixel_to_lonlat(x, y, width, height)
         lonlat_contour.append([lon, lat])
     return np.array(lonlat_contour)
-
 
 def create_polygon_from_contours(outer_contour, holes, width, height):
     """
@@ -177,11 +172,7 @@ def process_multipolygons(contours, hierarchy, width, height):
     for i, contour in enumerate(contours):
         if hierarchy[i][3] == -1:  # No parent -> outer contour (possible new polygon)
             # Find holes for this outer contour
-            holes = []
-            for j, contour in enumerate(contours):
-                if hierarchy[j][3] == i:  # Contour `j` is a child of outer contour `i` (hole)
-                    holes.append(contour)
-
+            holes = [contours[j] for j in range(len(contours)) if hierarchy[j][3] == i]
             # Create polygon for the outer contour and its holes
             polygon = create_polygon_from_contours(contour, holes, width, height)
             if polygon is not None:
@@ -193,7 +184,6 @@ def process_multipolygons(contours, hierarchy, width, height):
     if len(polygons) == 1:
         return polygons[0]
     return None
-
 
 def process_mask(image, kernel_size=(20, 20)):
     """
@@ -362,18 +352,22 @@ def footprint_open_cv(lon, lat, width=3600, height=1800, path=None, threshold_va
     - Contours are analyzed to form polygons, which are subsequently simplified and their precision reduced.
     - The final output is a WKT representation of the polygon, which can be used for geographic data representation.
     """
-    lon = np.array(lon).flatten()
-    lat = np.array(lat).flatten()
+    new_lon = np.array(lon).flatten()
+    new_lat = np.array(lat).flatten()
+
+    # Ensure longitude is in the range [-180, 180]
+    new_lon = ((new_lon + 180) % 360.0) - 180
 
     # Remove NaNs from lat/lon data
-    valid_points = ~np.isnan(lon * lat)
-    lon = lon[valid_points]
-    lat = lat[valid_points]
+    valid_points = ~np.isnan(new_lon * new_lat)
+    new_lon = new_lon[valid_points]
+    new_lat = new_lat[valid_points]
 
     # Create and save the image
     filename = f"{path}/image_{uuid.uuid4()}.png"
-    write_image(filename, lat, lon, image_width=width, image_height=height)
+    write_image(filename, new_lat, new_lon, image_width=width, image_height=height)
     img_th = read_and_threshold_image(filename, threshold_value)
+
     img_cleaned = apply_morphological_operations(img_th)
 
     contours, hierarchy = cv2.findContours(img_cleaned, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
@@ -383,7 +377,7 @@ def footprint_open_cv(lon, lat, width=3600, height=1800, path=None, threshold_va
 
     if polygon_structure is not None:
         simplified_polygon = simplify_polygon(polygon_structure)
-        simplified_polygon = reduce_precision(simplified_polygon)
-        return simplified_polygon.wkt
+        reduced_precision = reduce_precision(simplified_polygon)
+        return reduced_precision.wkt
 
     raise Exception("No valid polygons found.")
