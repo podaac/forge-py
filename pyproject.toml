@@ -20,6 +20,7 @@ requests = "^2.31.0"
 netcdf4 = "^1.6.5"
 opencv-python = "^4.10.0.84"
 pillow = "^11.0.0"
+opencv-python-headless = "^4.10.0.84"
 
 [tool.poetry.dev-dependencies]
 pytest = "^8.0.1"
