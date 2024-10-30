@@ -49,7 +49,7 @@ def ensure_counter_clockwise(geometry):
 
         # Correct each interior ring if it's counterclockwise (should be clockwise for holes)
         interiors = [
-            list(interior.coords)[::-1] if not interior.is_ccw else list(interior.coords)
+            list(interior.coords)[::-1] if interior.is_ccw else list(interior.coords)
             for interior in polygon.interiors
         ]
 
@@ -447,6 +447,7 @@ def footprint_open_cv(lon, lat, width=3600, height=1800, path=None, threshold_va
         simplified_polygon = simplify_polygon(polygon_structure)
         reduced_precision = reduce_precision(simplified_polygon)
         counter_clockwise = ensure_counter_clockwise(reduced_precision)
+        print(counter_clockwise.wkt)
         return counter_clockwise.wkt
 
     raise Exception("No valid polygons found.")
