@@ -47,9 +47,9 @@ def ensure_counter_clockwise(geometry):
         else:
             exterior = list(polygon.exterior.coords)
 
-        # Correct each interior ring if it's counterclockwise (should be clockwise for holes)
+        # Correct each interior ring if it's counterclockwise
         interiors = [
-            list(interior.coords)[::-1] if interior.is_ccw else list(interior.coords)
+            list(interior.coords)[::-1] if not interior.is_ccw else list(interior.coords)
             for interior in polygon.interiors
         ]
 
