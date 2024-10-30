@@ -42,7 +42,7 @@ def ensure_counter_clockwise(geometry):
     # Function to ensure a single polygon is counter-clockwise
     def correct_polygon(polygon):
         # Correct the exterior ring if it's not counterclockwise
-        if not polygon.exterior.is_ccw:
+        if polygon.exterior.is_ccw:
             exterior = list(polygon.exterior.coords)[::-1]
         else:
             exterior = list(polygon.exterior.coords)
