@@ -41,13 +41,13 @@ def ensure_counter_clockwise(geometry):
 
     # Function to ensure a single polygon is counter-clockwise
     def correct_polygon(polygon):
-        # Correct the exterior ring if it's not counterclockwise
+        # Make outer ring clockwise metadata aggregator reverses it
         if polygon.exterior.is_ccw:
             exterior = list(polygon.exterior.coords)[::-1]
         else:
             exterior = list(polygon.exterior.coords)
 
-        # Correct each interior ring if it's counterclockwise
+        # Make sure the internal ring are counter clockwise
         interiors = [
             list(interior.coords)[::-1] if not interior.is_ccw else list(interior.coords)
             for interior in polygon.interiors
