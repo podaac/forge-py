@@ -8,7 +8,6 @@ import json
 import os
 from datetime import datetime, timezone
 import xarray as xr
-import numpy as np
 
 from podaac.forge_py.args import parse_args
 from podaac.forge_py.file_util import make_absolute
@@ -59,46 +58,14 @@ def main(args=None):
     config_file = args.config
     local_file = args.granule
 
-    with open(config_file) as config_f:
-        read_config = json.load(config_f)
+    strategy, footprint_params = forge.load_footprint_config(config_file)
+    footprint_params["path"] = os.getcwd()
+    with xr.open_dataset(local_file, group=footprint_params.get('group'), decode_times=False) as ds:
+        lon_data = ds[footprint_params['longitude_var']]
+        lat_data = ds[footprint_params['latitude_var']]
 
-    longitude_var = read_config.get('lonVar')
-    latitude_var = read_config.get('latVar')
-    is360 = read_config.get('is360', False)
-
-    # Get footprint configuration
-    footprint_config = read_config.get('footprint', {})
-
-    thinning_fac = footprint_config.get('thinning_fac', 100)
-    thinning_method = footprint_config.get('thinning_method', 'standard')
-    alpha = footprint_config.get('alpha', 0.05)
-    strategy = footprint_config.get('strategy', None)
-    simplify = footprint_config.get('simplify', 0.1)
-    group = footprint_config.get('group')
-    cutoff_lat = footprint_config.get('cutoff_lat', None)
-    smooth_poles = footprint_config.get('smooth_poles', None)
-    fill_value = footprint_config.get('fill_value', np.nan)
-    width = footprint_config.get('width', 3600)
-    height = footprint_config.get('height', 1800)
-
-    # Generate footprint
-    with xr.open_dataset(local_file, group=group, decode_times=False) as ds:
-        lon_data = ds[longitude_var]
-        lat_data = ds[latitude_var]
         wkt_representation = forge.generate_footprint(
-            lon_data, lat_data,
-            thinning_fac=thinning_fac,
-            alpha=alpha,
-            is360=is360,
-            simplify=simplify,
-            cutoff_lat=cutoff_lat,
-            smooth_poles=smooth_poles,
-            strategy=strategy,
-            fill_value=fill_value,
-            thinning_method=thinning_method,
-            width=width,
-            height=height,
-            path=os.getcwd()
+            lon_data, lat_data, strategy=strategy, **footprint_params
         )
 
     if args.output_file:

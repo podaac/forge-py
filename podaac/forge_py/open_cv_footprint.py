@@ -396,7 +396,7 @@ def reduce_precision(geometry, precision=4):
     raise ValueError("Unsupported geometry type")
 
 
-def footprint_open_cv(lon, lat, width=3600, height=1800, path=None, threshold_value=185):
+def footprint_open_cv(lon, lat, width=3600, height=1800, path=None, threshold_value=185, **kwargs):
     """
     Main pipeline for processing geographic coordinates to create a footprint polygon using image processing techniques.
 
@@ -447,7 +447,6 @@ def footprint_open_cv(lon, lat, width=3600, height=1800, path=None, threshold_va
         simplified_polygon = simplify_polygon(polygon_structure)
         reduced_precision = reduce_precision(simplified_polygon)
         counter_clockwise = ensure_counter_clockwise(reduced_precision)
-        print(counter_clockwise.wkt)
         return counter_clockwise.wkt
 
     raise Exception("No valid polygons found.")

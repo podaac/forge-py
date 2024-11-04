@@ -1,4 +1,5 @@
 """Python footprint generator"""
+import json
 import numpy as np
 import alphashape
 from shapely.geometry import Polygon, MultiPolygon
@@ -6,6 +7,40 @@ from shapely.wkt import dumps
 import shapely
 import pandas as pd
 from podaac.forge_py import open_cv_footprint
+
+
+def load_footprint_config(config_file):
+    """
+    Load and process the footprint configuration from a JSON file.
+
+    Parameters:
+    ----------
+    config_file : str
+        Path to the JSON configuration file.
+
+    Returns:
+    -------
+    tuple
+        (strategy, config), where `strategy` is the footprint strategy to use,
+        and `config` is a dictionary of parameters specific to that strategy.
+    """
+    with open(config_file) as config_f:
+        read_config = json.load(config_f)
+
+    # Select the specified strategy and its parameters
+    footprint_config = read_config.get('footprint', {})
+    strategy = footprint_config.get('strategy', 'alpha_shape')  # Default to 'alpha_shape'
+    strategy_params = footprint_config.get(strategy, {})  # Get params for chosen strategy
+
+    # Include general options like is360 if needed outside strategies
+    common_params = {
+        'is360': read_config.get('is360', False),
+        'longitude_var': read_config.get('lonVar'),
+        'latitude_var': read_config.get('latVar')
+    }
+
+    # Merge strategy parameters with any additional common parameters
+    return strategy, {**common_params, **strategy_params}
 
 
 def thinning_bin_avg(x, y, rx, ry):
@@ -30,64 +65,54 @@ def thinning_bin_avg(x, y, rx, ry):
     return xy_thinned["x"].values, xy_thinned["y"].values
 
 
-def generate_footprint(lon, lat, thinning_fac=30, alpha=0.05, is360=False, simplify=0.1,
-                       strategy=None, cutoff_lat=None, smooth_poles=None, fill_value=np.nan,
-                       thinning_method="standard", width=3600, height=1800, path=None):
+def generate_footprint(lon, lat, strategy=None, is360=False, path=None, **kwargs):
     """
-    Generates footprint by calling different footprint strategies
+    Generates a geographic footprint using a specified strategy.
 
-    lon, lon: list/array-like
-        Latitudes and longitudes.
-    thinning_fac: int
-        Factor to thin out data by (makes alphashape fit faster).
-    alpha: float
-        The alpha parameter passed to alphashape.
-    is360: bool
-        Tell us if the logitude data is between 0-360
-    simplify:
-        simplify polygon factor
-    strategy:
-        What footprint strategy to use
-    cutoff_lat: (optional) float, default = None
-        If specified, latitudes higher than this threshold value will be
-        removed before the fit is performed. This works in both the north and
-        south direction, e.g. for a value of x, both points north of x and south
-        of -x will be removed.
-    smooth_poles: (optional) 2-tuple of floats, default = None
-        If specified, the first element gives the threshold latitude above which
-        any footprint indicies will have their latitudes set to the value of the
-        second element in "smooth_poles".
-    fill_value: (optional) float
-        Fill value in the latitude, longitude arrays. Default = np.nan; the default
-        will work even if the data have no NAN's. Future functionality will accommodate
-        multiple possible fill values.
+    Parameters:
+    ----------
+    lon, lat : list or array-like
+        Latitude and longitude values.
+    strategy : str, optional
+        The footprint strategy to use ('open_cv' or 'alpha_shape').
+    is360 : bool, default=False
+        If True, adjusts longitude values from 0-360 to -180-180 range.
+    path : str, optional
+        File path for saving output if the strategy requires it.
+    **kwargs : dict, optional
+        Additional parameters to be passed to the chosen strategy function.
+
+    Returns:
+    -------
+    str
+        The footprint as a WKT (Well-Known Text) string.
     """
-
-    # Transform lon array if it is 360
-    lon_array = lon
+    # Adjust longitude for 0-360 to -180-180 range if needed
     if is360:
-        lon_array = ((lon + 180) % 360.0) - 180
-    thinning = {'method': thinning_method, 'value': thinning_fac}
+        lon = ((lon + 180) % 360.0) - 180
+
+    # Dispatch to the correct footprint strategy based on `strategy`
     if strategy == "open_cv":
-        alpha_shape_wkt = open_cv_footprint.footprint_open_cv(lon, lat, width=width, height=height, path=path)
-        return alpha_shape_wkt
+        return open_cv_footprint.footprint_open_cv(lon, lat, path=path, **kwargs)
 
-    alpha_shape = fit_footprint(lon_array, lat, alpha=alpha, thinning=thinning, cutoff_lat=cutoff_lat, smooth_poles=smooth_poles, fill_value=fill_value)
-    alpha_shape = alpha_shape.simplify(simplify)
+    # Default to alpha_shape strategy if no strategy is specified
+    alpha_shape = fit_footprint(lon, lat, **kwargs)
 
-    # If the polygon is not valid, attempt to fix self-intersections
+    # Simplify and validate the alpha shape if requested
+    if 'simplify' in kwargs:
+        alpha_shape = alpha_shape.simplify(kwargs['simplify'])
+
     if not alpha_shape.is_valid:
         alpha_shape = alpha_shape.buffer(0)
 
-    wkt_alphashape = dumps(alpha_shape)
-    return wkt_alphashape
+    return dumps(alpha_shape)
 
 
 def fit_footprint(
         lon, lat, alpha=0.05,
         thinning=None, cutoff_lat=None,
         smooth_poles=None, fill_value=np.nan,
-        return_xythin=False):
+        return_xythin=False, **kwargs):
     """
     Fits instrument coverage footprint for level 2 data set. Output is a polygon object for
     the indices of the footprint outline. Uses the alphashape package for the fit,
@@ -174,6 +199,7 @@ def fit_footprint(
         # Return the smoothed polygon
         return Polygon(zip(fp_lon, fp_lat))
 
+    smooth_poles = None
     if smooth_poles is not None:
         if isinstance(alpha_shape, shapely.geometry.polygon.Polygon):
             footprint = pole_smoother(*alpha_shape.exterior.coords.xy, *smooth_poles)
