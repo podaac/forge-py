@@ -1,4 +1,6 @@
 """Python footprint generator"""
+# pylint: disable=unused-argument
+
 import json
 import numpy as np
 import alphashape

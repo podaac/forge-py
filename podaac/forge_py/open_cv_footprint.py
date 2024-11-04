@@ -1,5 +1,5 @@
 """Script with algorithm to generate a wkt footprint for netcdf file using open cv"""
-# pylint: disable=no-member, broad-exception-raised
+# pylint: disable=no-member, broad-exception-raised, unused-argument
 
 import uuid
 import numpy as np

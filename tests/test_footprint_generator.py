@@ -273,7 +273,6 @@ def test_forge_py():
         wkt_alphashape = forge.generate_footprint(
             lon_data, lat_data, strategy=strategy, **footprint_params
         )
-        print(wkt_alphashape)
         assert compare_shapes_similarity(wkt_alphashape, polygon_shape)
 
 def test_forge_py_open_cv():
