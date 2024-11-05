@@ -67,6 +67,46 @@ def thinning_bin_avg(x, y, rx, ry):
     return xy_thinned["x"].values, xy_thinned["y"].values
 
 
+def remove_small_polygons(geometry, min_area):
+    """
+    Filters out small polygons from a MultiPolygon based on a minimum area threshold.
+    
+    If the input is a single Polygon, it is returned as WKT without any filtering. 
+    If the input is a MultiPolygon, each polygon within it is filtered based on 
+    the specified minimum area. Only polygons meeting or exceeding this area are retained.
+    
+    Parameters:
+    - geometry (str or shapely.geometry.Polygon/MultiPolygon): The input geometry, 
+      either as a WKT string or a Shapely Polygon/MultiPolygon object.
+    - min_area (float): The minimum area threshold for polygons to be retained 
+      when filtering a MultiPolygon.
+    
+    Returns:
+    - wkt str: 
+        - If input is a single Polygon (either as a WKT string or Polygon object), 
+          returns the WKT of that Polygon without filtering.
+        - If input is a MultiPolygon, returns the WKT of a new MultiPolygon containing 
+          only polygons that meet the minimum area threshold.
+    """
+
+    # Parse the WKT data if it's a string
+    if isinstance(geometry, str):
+        geometry = wkt.loads(geometry)
+    
+    # Ensure the geometry is a MultiPolygon for uniform processing
+    if isinstance(geometry, Polygon):
+        return geometry
+    
+    # Filter polygons based on minimum area
+    filtered_polygons = [polygon for polygon in geometry.geoms if polygon.area >= min_area]
+    
+    # Create a new MultiPolygon from the filtered polygons
+    result = MultiPolygon(filtered_polygons) if filtered_polygons else None
+    
+    # Return WKT format if it was originally a string, otherwise return the geometry object
+    return result
+
+
 def generate_footprint(lon, lat, strategy=None, is360=False, path=None, **kwargs):
     """
     Generates a geographic footprint using a specified strategy.
@@ -95,19 +135,20 @@ def generate_footprint(lon, lat, strategy=None, is360=False, path=None, **kwargs
 
     # Dispatch to the correct footprint strategy based on `strategy`
     if strategy == "open_cv":
-        return open_cv_footprint.footprint_open_cv(lon, lat, path=path, **kwargs)
+        footprint = open_cv_footprint.footprint_open_cv(lon, lat, path=path, **kwargs)
+    else:
+        footprint = fit_footprint(lon, lat, **kwargs)
+        if not footprint.is_valid:
+            footprint = footprint.buffer(0)
 
-    # Default to alpha_shape strategy if no strategy is specified
-    alpha_shape = fit_footprint(lon, lat, **kwargs)
-
-    # Simplify and validate the alpha shape if requested
     if 'simplify' in kwargs:
-        alpha_shape = alpha_shape.simplify(kwargs['simplify'])
+        footprint = footprint.simplify(tolerance=kwargs['simplify'], preserve_topology=True)
 
-    if not alpha_shape.is_valid:
-        alpha_shape = alpha_shape.buffer(0)
+    # Optionally filter small polygons
+    if "min_area" in kwargs:
+        footprint = remove_small_polygons(footprint, kwargs['min_area'])
 
-    return dumps(alpha_shape)
+    return dumps(footprint)
 
 
 def fit_footprint(

@@ -192,26 +192,6 @@ def create_polygon_from_contours(outer_contour, holes, width, height):
     return None
 
 
-def simplify_polygon(polygon, tolerance=0.2):
-    """
-    Simplifies a polygon by reducing the number of vertices while preserving its general shape.
-
-    Parameters:
-    - polygon (Polygon): A Shapely Polygon object to be simplified.
-    - tolerance (float, optional): The tolerance for simplification. Higher values result in greater simplification.
-      Default is 0.2.
-
-    Returns:
-    - Polygon: A new Shapely Polygon object with a reduced number of vertices, simplified based on the specified tolerance.
-
-    Notes:
-    - The function uses the Douglas-Peucker algorithm, controlled by the tolerance parameter.
-    - Setting `preserve_topology=True` ensures that the simplified polygon maintains its original topology,
-      avoiding self-intersections.
-    """
-    return polygon.simplify(tolerance=tolerance, preserve_topology=True)
-
-
 def process_multipolygons(contours, hierarchy, width, height):
     """
     Processes a set of contours and hierarchy information to construct polygons with holes,
@@ -444,9 +424,8 @@ def footprint_open_cv(lon, lat, width=3600, height=1800, path=None, threshold_va
     polygon_structure = process_multipolygons(contours, hierarchy, width, height)
 
     if polygon_structure is not None:
-        simplified_polygon = simplify_polygon(polygon_structure)
-        reduced_precision = reduce_precision(simplified_polygon)
+        reduced_precision = reduce_precision(polygon_structure)
         counter_clockwise = ensure_counter_clockwise(reduced_precision)
-        return counter_clockwise.wkt
+        return counter_clockwise
 
     raise Exception("No valid polygons found.")
