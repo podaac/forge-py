@@ -69,40 +69,39 @@ def thinning_bin_avg(x, y, rx, ry):
 
 def remove_small_polygons(geometry, min_area):
     """
-    Filters out small polygons from a MultiPolygon based on a minimum area threshold.
-    
-    If the input is a single Polygon, it is returned as WKT without any filtering. 
-    If the input is a MultiPolygon, each polygon within it is filtered based on 
-    the specified minimum area. Only polygons meeting or exceeding this area are retained.
-    
+    Removes polygons from a MultiPolygon that are smaller than a specified area threshold.
+
+    If the input is a single Polygon, it is returned as-is without filtering. If the input
+    is a MultiPolygon, only polygons with an area greater than or equal to the specified
+    minimum area are retained in the output.
+
     Parameters:
-    - geometry (str or shapely.geometry.Polygon/MultiPolygon): The input geometry, 
-      either as a WKT string or a Shapely Polygon/MultiPolygon object.
-    - min_area (float): The minimum area threshold for polygons to be retained 
-      when filtering a MultiPolygon.
-    
+    ----------
+    geometry : shapely.geometry.Polygon or shapely.geometry.MultiPolygon
+        The input geometry, which can be a single Polygon or a MultiPolygon.
+    min_area : float
+        The minimum area threshold. Polygons with an area less than this value
+        are removed if the input is a MultiPolygon.
+
     Returns:
-    - wkt str: 
-        - If input is a single Polygon (either as a WKT string or Polygon object), 
-          returns the WKT of that Polygon without filtering.
-        - If input is a MultiPolygon, returns the WKT of a new MultiPolygon containing 
-          only polygons that meet the minimum area threshold.
+    -------
+    shapely.geometry.Polygon or shapely.geometry.MultiPolygon or None
+        - If the input is a single Polygon, it is returned without modification.
+        - If the input is a MultiPolygon, a new MultiPolygon containing only polygons
+          meeting the area threshold is returned.
+        - If entire area too small then return original multipolygon
     """
 
-    # Parse the WKT data if it's a string
-    if isinstance(geometry, str):
-        geometry = wkt.loads(geometry)
-    
     # Ensure the geometry is a MultiPolygon for uniform processing
     if isinstance(geometry, Polygon):
         return geometry
-    
+
     # Filter polygons based on minimum area
     filtered_polygons = [polygon for polygon in geometry.geoms if polygon.area >= min_area]
-    
+
     # Create a new MultiPolygon from the filtered polygons
-    result = MultiPolygon(filtered_polygons) if filtered_polygons else None
-    
+    result = MultiPolygon(filtered_polygons) if filtered_polygons else geometry
+
     # Return WKT format if it was originally a string, otherwise return the geometry object
     return result
 
