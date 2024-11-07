@@ -91,14 +91,14 @@ def read_and_threshold_image(image_path, threshold_value=185):
     return img_th
 
 
-def apply_morphological_operations(image, kernel_size=(5, 5)):
+def apply_morphological_operations(image, fill_kernel=(20, 20)):
     """
     Applies morphological operations to clean up binary images by filling gaps and removing small noise.
 
     Parameters:
     - image (ndarray): The input binary image to be processed.
-    - kernel_size (tuple of int, optional): The size of the structuring element for morphological operations.
-      Default is (5, 5).
+    - fill_kernel (array or tuple of int, optional): The size of the structuring element for morphological operations.
+      Default is (20, 20).
 
     Returns:
     - img_cleaned (ndarray): The image after applying morphological closing and opening operations.
@@ -107,7 +107,7 @@ def apply_morphological_operations(image, kernel_size=(5, 5)):
     - This function uses a morphological closing operation to fill small gaps in the image and
       a morphological opening operation to remove small noise, both using a rectangular structuring element.
     """
-    kernel = np.ones(kernel_size, np.uint8)
+    kernel = np.ones(fill_kernel, np.uint8)
     img_cleaned = cv2.morphologyEx(image, cv2.MORPH_CLOSE, kernel)  # Fill gaps
     img_cleaned = cv2.morphologyEx(img_cleaned, cv2.MORPH_OPEN, kernel)  # Remove small noise
     return img_cleaned
@@ -233,13 +233,13 @@ def process_multipolygons(contours, hierarchy, width, height):
     return None
 
 
-def process_mask(image, kernel_size=(20, 20)):
+def process_mask(image, fill_kernel=(20, 20)):
     """
     Applies morphological closing to an image mask to fill small gaps, enhancing contiguous regions.
 
     Parameters:
     - image (ndarray): The input binary mask image to be processed.
-    - kernel_size (tuple of int, optional): The size of the structuring element (kernel) used for morphological closing.
+    - fill_kernel (array or tuple of int, optional): The size of the structuring element (kernel) used for morphological closing.
       Default is (20, 20).
 
     Returns:
@@ -249,7 +249,7 @@ def process_mask(image, kernel_size=(20, 20)):
     - Morphological closing is performed using a rectangular structuring element, which fills small gaps and
       helps create smoother, more continuous regions in binary masks.
     """
-    kernel = np.ones(kernel_size, np.uint8)
+    kernel = np.ones(fill_kernel, np.uint8)
     return cv2.morphologyEx(image, cv2.MORPH_CLOSE, kernel)
 
 
@@ -287,7 +287,7 @@ def convert_to_image_coords(lon, lat, image_width=3600, image_height=1800):
     return img_x, img_y
 
 
-def write_image(filename, lat, lon, image_width=3600, image_height=1800):
+def write_image(filename, lat, lon, image_width=3600, image_height=1800, fill_kernel=(20, 20)):
     """
     Creates an image from geographic coordinates, processes it to fill gaps, and saves it as a PNG file.
 
@@ -297,6 +297,8 @@ def write_image(filename, lat, lon, image_width=3600, image_height=1800):
     - lon (float or ndarray): Longitude values of points to plot, either as a single value or an array.
     - image_width (int, optional): Width of the image in pixels. Default is 3600.
     - image_height (int, optional): Height of the image in pixels. Default is 1800.
+    - fill_kernel (array or tuple of int, optional): The size of the structuring element for morphological operations.
+      Default is (20, 20).
 
     Returns:
     - None
@@ -333,7 +335,7 @@ def write_image(filename, lat, lon, image_width=3600, image_height=1800):
     image[img_y, img_x] = 255
 
     # Process the image (fill gaps using morphological closing)
-    processed_image = process_mask(image)
+    processed_image = process_mask(image, fill_kernel=fill_kernel)
 
     # Save the image
     result_image = Image.fromarray(processed_image)
@@ -376,7 +378,22 @@ def reduce_precision(geometry, precision=4):
     raise ValueError("Unsupported geometry type")
 
 
-def footprint_open_cv(lon, lat, width=3600, height=1800, path=None, threshold_value=185, **kwargs):
+def calculate_width_from_height(height):
+    """
+    Calculate the width based on a given height, maintaining a 2:1 aspect ratio.
+
+    Parameters:
+    height (int or float): The height value to scale from.
+
+    Returns:
+    int: The calculated width that maintains a 2:1 aspect ratio (width:height).
+    """
+    aspect_ratio = 360 / 180  # 2:1 ratio
+    width = int(height * aspect_ratio)
+    return width
+
+
+def footprint_open_cv(lon, lat, pixel_height=1800, path=None, threshold_value=185, fill_kernel=(20, 20), **kwargs):
     """
     Main pipeline for processing geographic coordinates to create a footprint polygon using image processing techniques.
 
@@ -411,21 +428,23 @@ def footprint_open_cv(lon, lat, width=3600, height=1800, path=None, threshold_va
     new_lon = new_lon[valid_points]
     new_lat = new_lat[valid_points]
 
+    pixel_width = calculate_width_from_height(pixel_height)
+
     # Create and save the image
     filename = f"{path}/image_{uuid.uuid4()}.png"
-    write_image(filename, new_lat, new_lon, image_width=width, image_height=height)
+    write_image(filename, new_lat, new_lon, image_width=pixel_width, image_height=pixel_height, fill_kernel=fill_kernel)
     img_th = read_and_threshold_image(filename, threshold_value)
 
-    img_cleaned = apply_morphological_operations(img_th)
+    img_cleaned = apply_morphological_operations(img_th, fill_kernel=fill_kernel)
 
     contours, hierarchy = cv2.findContours(img_cleaned, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
     hierarchy = hierarchy[0] if hierarchy is not None else []
 
-    polygon_structure = process_multipolygons(contours, hierarchy, width, height)
+    polygon_structure = process_multipolygons(contours, hierarchy, pixel_width, pixel_height)
 
     if polygon_structure is not None:
         reduced_precision = reduce_precision(polygon_structure)
-        counter_clockwise = ensure_counter_clockwise(reduced_precision)
-        return counter_clockwise
+        # counter_clockwise = ensure_counter_clockwise(reduced_precision)
+        return reduced_precision
 
     raise Exception("No valid polygons found.")

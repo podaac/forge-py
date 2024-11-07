@@ -147,7 +147,7 @@ def generate_footprint(lon, lat, strategy=None, is360=False, path=None, **kwargs
     if "min_area" in kwargs:
         footprint = remove_small_polygons(footprint, kwargs['min_area'])
 
-    return dumps(footprint)
+    return dumps(footprint, trim=True)
 
 
 def fit_footprint(
