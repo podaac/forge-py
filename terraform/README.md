@@ -15,21 +15,21 @@ This module is used to deploy the `forge_py` Lambda function with Terraform. It 
 
 ## Inputs
 
-| Name                        | Description                                                                 | Type   | Default                         |
-| --------------------------- | --------------------------------------------------------------------------- | ------ | ------------------------------- |
-| `lambda_container_image_uri` | URI of the container image for the `forge-py` Lambda function.              | string | `"ghcr.io/podaac/forge-py:0.1.0"`|
-| `prefix`                     | Prefix for resource names.                                                  | string | `local.resources_name`           |
-| `region`                     | AWS region where resources will be deployed.                                | string | `var.region`                     |
-| `cmr_environment`            | CMR environment for the `forge-py` function.                                | string | `var.cmr_environment`            |
-| `config_bucket`              | S3 bucket name for storing configuration files.                            | string | `"podaac-services-uat-hitide-backfill-internal"`|
-| `config_dir`                 | Directory in the S3 bucket for configuration files.                         | string | `"forge_py_configs"`             |
-| `footprint_output_bucket`    | S3 bucket for storing footprint output.                                     | string | `"${local.resources_name}-internal"`|
-| `footprint_output_dir`       | Directory in the footprint output bucket.                                  | string | `"dataset-metadata"`             |
-| `lambda_role`                | ARN of the Lambda execution role.                                          | string | `aws_iam_role.iam_execution.arn` |
-| `security_group_ids`         | List of security group IDs to associate with the Lambda function.           | list   | `[var.aws_security_group_ids]`   |
-| `subnet_ids`                 | List of subnet IDs for Lambda function placement in the VPC.                | list   | `data.aws_subnets.private.ids`   |
-| `memory_size`                | Memory size for the Lambda function.                                        | number | `1024`                           |
-| `timeout`                    | Timeout in seconds for the Lambda function.                                 | number | `900`                            |
+| Name                        | Description                                                                 | Type   |
+| --------------------------- | --------------------------------------------------------------------------- | ------ |
+| `lambda_container_image_uri` | URI of the container image for the `forge-py` Lambda function.              | string |
+| `prefix`                     | Prefix for resource names.                                                  | string |
+| `region`                     | AWS region where resources will be deployed.                                | string |
+| `cmr_environment`            | CMR environment for the `forge-py` function.                                | string |
+| `config_bucket`              | S3 bucket name for storing configuration files.                            | string |
+| `config_dir`                 | Directory in the S3 bucket for configuration files.                         | string |
+| `footprint_output_bucket`    | S3 bucket for storing footprint output.                                     | string |
+| `footprint_output_dir`       | Directory in the footprint output bucket.                                  | string |
+| `lambda_role`                | ARN of the Lambda execution role.                                          | string |
+| `security_group_ids`         | List of security group IDs to associate with the Lambda function.           | list   |
+| `subnet_ids`                 | List of subnet IDs for Lambda function placement in the VPC.                | list   |
+| `memory_size`                | Memory size for the Lambda function.                                        | number |
+| `timeout`                    | Timeout in seconds for the Lambda function.                                 | number |
 
 ## Outputs
 
