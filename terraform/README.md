@@ -33,7 +33,12 @@ This module is used to deploy the `forge_py` Lambda function with Terraform. It 
 
 ## Outputs
 
-- None
+| Name                                         | Description                                                                |
+| -------------------------------------------- | -------------------------------------------------------------------------- |
+| `forge_py_task_lambda_arn`                  | ARN of the `forge_py_task` Lambda function.                                |
+| `cloudwatch_forge_py_task_lambda_name`      | CloudWatch log group name for `forge_py_task` Lambda function.             |
+| `forge_branch_task_lambda_arn`              | ARN of the `forge_branch_task` Lambda function.                            |
+| `cloudwatch_forge_branch_task_lambda_name`  | CloudWatch log group name for `forge_branch_task` Lambda function.         |
 
 ## Example Usage
 
