@@ -179,7 +179,6 @@ class FootprintGenerator(Process):
 
         strategy, footprint_params = forge.load_footprint_config(config_file)
         footprint_params["path"] = self.path
-        print(footprint_params)
         with xr.open_dataset(local_file, group=footprint_params.get('group'), decode_times=False) as ds:
             lon_data = ds[footprint_params['longitude_var']]
             lat_data = ds[footprint_params['latitude_var']]
