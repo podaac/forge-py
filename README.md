@@ -36,43 +36,54 @@ The configuration file specifies the parameters for generating footprints from v
 ## Configuration Options
 
 ### `footprint`
-* **`strategy`**: 
-  * `open_cv` (string): Uses OpenCV-based image processing techniques to extract footprints.
-  * `alpha_shape` (string): Employs the Alpha Shape algorithm to construct footprints from point data.
+* **`lonVar`** (string, required): Longitude variable in the dataset.
+* **`latVar`** (string, required): Latitude variable in the dataset.
+* **`is360`** (boolean, optional, default: False): Indicates if the data is in 360 format.
+* **`strategy`** (optional, default: alpha_shape): 
+  * **`open_cv`**: Uses OpenCV-based image processing techniques to extract footprints.
+  * **`alpha_shape`**: Employs the Alpha Shape algorithm to construct footprints from point data.
+
 * **`open_cv`**:
-  * `pixel_height` (int): Sets the desired pixel height for the input image.
-  * `simplify` (float): Controls the level of simplification applied to the extracted polygons.
-  * `min_area` (int): Specifies the minimum area for polygons to be considered to be removed.
-  * `fill_kernel` (list of int): Defines the kernel size for filling holes in the extracted polygons.
-  * `group` (string): Specifies the NetCDF file group to use for input data.
+  * **`pixel_height`** (int, optional, default: 1800): Desired pixel height for the input image.
+  * **`min_area`** (int, optional): Minimum area for polygons to be retained.
+  * **`fill_kernel`** (list of int, optional, default: [20,20]): Kernel size for filling holes in polygons.
+  * **`group`** (string, optional): NetCDF file group to use for input data for lon lat.
+  * **`simplify`** (float, optional,): Controls the level of simplification applied to extracted polygons.
+
 * **`alpha_shape`**:
-  * `alpha` (float): Sets the alpha value for the Alpha Shape algorithm, controlling the shape of the generated polygons.
-  * `thinning`: 
-    * `method` (string): Specifies the thinning method to apply to the Alpha Shape.
-    * `value` (list of float or float): Sets the thinning parameters.
-  * `cutoff_lat` (int): Defines the latitude cutoff for smoothing.
-  * `smooth_poles` (list of int): Specifies the latitude range for smoothing near the poles.
-  * `group` (string): Specifies the NetCDF file group to use for input data.
-  * `simplify` (float): Controls the level of simplification applied to the Alpha Shape polygons.
+  * **`alpha`** (float, optional, default: 0.05): Alpha value for the Alpha Shape algorithm, affecting the shape of polygons.
+  * **`thinning`** (dic, optional):
+    * **`method`** (string): Thinning method to apply to the Alpha Shape.
+    * **`value`** (list of float or float): Thinning parameters.
+  * **`cutoff_lat`** (int, optional): Latitude cutoff for smoothing.
+  * **`smooth_poles`** (list of int, optional): Latitude range for smoothing near poles.
+  * **`group`** (string, optional): NetCDF file group to use for input data for lon lat.
+  * **`simplify`** (float, optional): Controls the level of simplification applied to extracted polygons.
 
 ## Example Configuration
 
 ```json
-   "footprint":{
-      "strategy": "open_cv",
-      "open_cv": {
-         "pixel_height": 1000,
-         "simplify":0.3,
-         "min_area": 30,
-         "fill_kernel": [30,30],
-         "group": "group for lon lat"
-      },
-      "alpha_shape": {
-         "alpha":0.2,
-         "thinning": {"method": "bin_avg", "value": [0.5, 0.5]},
-         "cutoff_lat": 80,
-         "smooth_poles": [78,80],
-         "group": "group for lon lat",
-         "simplify" : 0.3
+   {
+      "latVar":"lat",
+      "lonVar":"lon",
+      "timeVar":"time",
+      "is360":false,
+      "footprint":{
+        "strategy": "open_cv",
+        "open_cv": {
+           "pixel_height": 1000,
+           "simplify":0.3,
+           "min_area": 30,
+           "fill_kernel": [30,30],
+           "group": "group for lon lat"
+        },
+        "alpha_shape": {
+           "alpha":0.2,
+           "thinning": {"method": "bin_avg", "value": [0.5, 0.5]},
+           "cutoff_lat": 80,
+           "smooth_poles": [78,80],
+           "group": "group for lon lat",
+           "simplify" : 0.3
+        }
       }
-   }
+    }
