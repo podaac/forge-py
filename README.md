@@ -36,8 +36,8 @@ The configuration file specifies the parameters for generating footprints from v
 ## Configuration Options
 
 ### `footprint`
-* **`lonVar`** (string, required): Longitude variable in the dataset.
-* **`latVar`** (string, required): Latitude variable in the dataset.
+* **`lonVar`** (string, required): Longitude variable in the dataset include group if in one.
+* **`latVar`** (string, required): Latitude variable in the dataset include group if in one.
 * **`is360`** (boolean, optional, default: False): Indicates if the data is in 360 format.
 * **`strategy`** (optional, default: alpha_shape): 
   * **`open_cv`**: Uses OpenCV-based image processing techniques to extract footprints.
@@ -47,7 +47,6 @@ The configuration file specifies the parameters for generating footprints from v
   * **`pixel_height`** (int, optional, default: 1800): Desired pixel height for the input image.
   * **`min_area`** (int, optional): Minimum area for polygons to be retained.
   * **`fill_kernel`** (list of int, optional, default: [20,20]): Kernel size for filling holes in polygons.
-  * **`group`** (string, optional): NetCDF file group to use for input data for lon lat.
   * **`simplify`** (float, optional,): Controls the level of simplification applied to extracted polygons.
 
 * **`alpha_shape`**:
@@ -57,15 +56,14 @@ The configuration file specifies the parameters for generating footprints from v
     * **`value`** (list of float or float): Thinning parameters.
   * **`cutoff_lat`** (int, optional): Latitude cutoff for smoothing.
   * **`smooth_poles`** (list of int, optional): Latitude range for smoothing near poles.
-  * **`group`** (string, optional): NetCDF file group to use for input data for lon lat.
   * **`simplify`** (float, optional): Controls the level of simplification applied to extracted polygons.
 
 ## Example Configuration
 
 ```json
    {
-      "latVar":"lat",
-      "lonVar":"lon",
+      "latVar":"/group1/group2/lat",
+      "lonVar":"/group1/group2/lon",
       "timeVar":"time",
       "is360":false,
       "footprint":{
@@ -75,14 +73,12 @@ The configuration file specifies the parameters for generating footprints from v
            "simplify":0.3,
            "min_area": 30,
            "fill_kernel": [30,30],
-           "group": "group for lon lat"
         },
         "alpha_shape": {
            "alpha":0.2,
            "thinning": {"method": "bin_avg", "value": [0.5, 0.5]},
            "cutoff_lat": 80,
            "smooth_poles": [78,80],
-           "group": "group for lon lat",
            "simplify" : 0.3
         }
       }
