@@ -55,6 +55,7 @@ The configuration file specifies the parameters for generating footprints from v
     * **`method`** (string): Thinning method to apply to the Alpha Shape.
     * **`value`** (list of float or float): Thinning parameters.
   * **`cutoff_lat`** (int, optional): Latitude cutoff for smoothing.
+  * **`min_area`** (int, optional): Minimum area for polygons to be retained.
   * **`smooth_poles`** (list of int, optional): Latitude range for smoothing near poles.
   * **`simplify`** (float, optional): Controls the level of simplification applied to extracted polygons.
 
