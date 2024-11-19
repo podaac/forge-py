@@ -4,7 +4,7 @@
 import json
 from shapely.geometry import Polygon, MultiPolygon
 from shapely.wkt import dumps
-from podaac.forge_py import open_cv_footprint, alpha_shape_footprint
+from podaac.forge_py.strategy import open_cv_footprint, alpha_shape_footprint
 
 
 class GroupMismatchError(Exception):
