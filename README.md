@@ -62,8 +62,8 @@ The configuration file specifies the parameters for generating footprints from v
 
 ```json
    {
-      "latVar":"/group1/group2/lat",
-      "lonVar":"/group1/group2/lon",
+      "latVar":"group1/group2/lat",
+      "lonVar":"group1/group2/lon",
       "timeVar":"time",
       "is360":false,
       "footprint":{
