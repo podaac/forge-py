@@ -213,7 +213,7 @@ def convert_to_image_coords(lon, lat, image_width=3600, image_height=1800):
 
 def write_image(filename, lat, lon, image_width=3600, image_height=1800):
     """
-    Creates an image from geographic coordinates, processes it to fill gaps, and saves it as a PNG file.
+    Creates an image from geographic coordinates and saves it as a PNG file.
 
     Parameters:
     - filename (str): path to the filename.
@@ -228,8 +228,7 @@ def write_image(filename, lat, lon, image_width=3600, image_height=1800):
     Notes:
     - This function rounds latitude and longitude values, converts them to image coordinates,
       and creates a binary image where each coordinate point is set to white (255) on a black background.
-    - The image is processed with a morphological closing operation to fill gaps.
-    - The final processed image is saved as a PNG file with the specified filename.
+    - The image is saved as a PNG file with the specified filename.
     """
     # Round lat/lon to two decimal places
     lon_rounded = np.round(lon, 2)
