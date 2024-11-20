@@ -8,12 +8,12 @@ from shapely.geometry import Polygon, MultiPolygon
 from PIL import Image
 
 
-def read_and_threshold_image(image_path, threshold_value=185):
+def read_and_threshold_image(input_image_path, threshold_value=185):
     """
     Reads an image from the specified file path, converts it to grayscale, and applies a binary threshold.
 
     Parameters:
-    - image_path (str): The file path to the input image.
+    - input_image_path (str): The file path to the input image.
     - threshold_value (int, optional): The threshold value for binarization. Default is 185.
 
     Returns:
@@ -23,7 +23,7 @@ def read_and_threshold_image(image_path, threshold_value=185):
     - The function converts the image to grayscale using OpenCV, then applies a binary threshold where pixel values
       above `threshold_value` are set to 255 (white), and those below are set to 0 (black).
     """
-    img = cv2.imread(image_path)
+    img = cv2.imread(input_image_path)
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     _, img_th = cv2.threshold(gray, threshold_value, 255, cv2.THRESH_BINARY)
 
@@ -211,14 +211,14 @@ def convert_to_image_coords(lon, lat, image_width=3600, image_height=1800):
     return img_x, img_y
 
 
-def write_image(filename, lat, lon, image_width=3600, image_height=1800):
+def write_image(lat, lon, output_filename, image_width=3600, image_height=1800):
     """
     Creates an image from geographic coordinates and saves it as a PNG file.
 
     Parameters:
-    - filename (str): path to the filename.
     - lat (float or ndarray): Latitude values of points to plot, either as a single value or an array.
     - lon (float or ndarray): Longitude values of points to plot, either as a single value or an array.
+    - output_filename (str): path to the filename.
     - image_width (int, optional): Width of the image in pixels. Default is 3600.
     - image_height (int, optional): Height of the image in pixels. Default is 1800.
 
@@ -228,7 +228,7 @@ def write_image(filename, lat, lon, image_width=3600, image_height=1800):
     Notes:
     - This function rounds latitude and longitude values, converts them to image coordinates,
       and creates a binary image where each coordinate point is set to white (255) on a black background.
-    - The image is saved as a PNG file with the specified filename.
+    - The image is saved as a PNG file with the specified output filename.
     """
     # Round lat/lon to two decimal places
     lon_rounded = np.round(lon, 2)
@@ -257,7 +257,7 @@ def write_image(filename, lat, lon, image_width=3600, image_height=1800):
 
     # Save the image
     result_image = Image.fromarray(image)
-    result_image.save(filename)
+    result_image.save(output_filename)
 
 
 def reduce_precision(geometry, precision=4):
@@ -349,11 +349,11 @@ def footprint_open_cv(lon, lat, pixel_height=1800, path=None, threshold_value=18
     pixel_width = calculate_width_from_height(pixel_height)
 
     # Create and save the image
-    filename = f"{path}/image_original_{uuid.uuid4()}.png"
+    original_filename = f"{path}/image_original_{uuid.uuid4()}.png"
     processed_filename = f"{path}/image_processed_{uuid.uuid4()}.png"
-    write_image(filename, new_lat, new_lon, image_width=pixel_width, image_height=pixel_height)
+    write_image(new_lat, new_lon, original_filename, image_width=pixel_width, image_height=pixel_height)
 
-    img_th = read_and_threshold_image(filename, threshold_value)
+    img_th = read_and_threshold_image(original_filename, threshold_value)
     img_cleaned = apply_morphological_operations(img_th, fill_kernel=fill_kernel, output_path=processed_filename)
 
     contours, hierarchy = cv2.findContours(img_cleaned, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_NONE)
