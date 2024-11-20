@@ -26,10 +26,11 @@ def read_and_threshold_image(image_path, threshold_value=185):
     img = cv2.imread(image_path)
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     _, img_th = cv2.threshold(gray, threshold_value, 255, cv2.THRESH_BINARY)
+
     return img_th
 
 
-def apply_morphological_operations(image, fill_kernel=(20, 20)):
+def apply_morphological_operations(image, fill_kernel=(20, 20), output_path=None):
     """
     Applies morphological operations to clean up binary images by filling gaps and removing small noise.
 
@@ -48,6 +49,11 @@ def apply_morphological_operations(image, fill_kernel=(20, 20)):
     kernel = np.ones(fill_kernel, np.uint8)
     img_cleaned = cv2.morphologyEx(image, cv2.MORPH_CLOSE, kernel)  # Fill gaps
     img_cleaned = cv2.morphologyEx(img_cleaned, cv2.MORPH_OPEN, kernel)  # Remove small noise
+
+    # Save the processed image if output_path is provided
+    if output_path:
+        cv2.imwrite(output_path, img_cleaned)
+
     return img_cleaned
 
 
@@ -369,11 +375,12 @@ def footprint_open_cv(lon, lat, pixel_height=1800, path=None, threshold_value=18
     pixel_width = calculate_width_from_height(pixel_height)
 
     # Create and save the image
-    filename = f"{path}/image_{uuid.uuid4()}.png"
+    filename = f"{path}/image_original_{uuid.uuid4()}.png"
+    processed_filename = f"{path}/image_processed_{uuid.uuid4()}.png"
     write_image(filename, new_lat, new_lon, image_width=pixel_width, image_height=pixel_height, fill_kernel=fill_kernel)
-    img_th = read_and_threshold_image(filename, threshold_value)
 
-    img_cleaned = apply_morphological_operations(img_th, fill_kernel=fill_kernel)
+    img_th = read_and_threshold_image(filename, threshold_value)
+    img_cleaned = apply_morphological_operations(img_th, fill_kernel=fill_kernel, output_path=processed_filename)
 
     contours, hierarchy = cv2.findContours(img_cleaned, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_NONE)
     hierarchy = hierarchy[0] if hierarchy is not None else []

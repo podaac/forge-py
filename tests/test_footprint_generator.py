@@ -305,7 +305,7 @@ def test_forge_py_open_cv():
     test_dir = os.path.dirname(os.path.realpath(__file__))
     input_dir = f'{test_dir}/input'
     nc_file = f'{input_dir}/measures_esdr_scatsat_l2_wind_stress_23433_v1.1_s20210228-054653-e20210228-072612.nc'
-    config_file = f'{input_dir}/SCATSAT1_ESDR_L2_WIND_STRESS_V1.1.cfg'
+    config_file = f'{input_dir}/SCATSAT1_ESDR_L2_WIND_STRESS_V1.1_open_cv.cfg'
     result_file = f'{test_dir}/results/footprint_result_open_cv.txt'
 
     with open(result_file, "r") as file:
@@ -313,7 +313,6 @@ def test_forge_py_open_cv():
 
     strategy, footprint_params = forge.load_footprint_config(config_file)
     footprint_params["path"] = test_dir
-    strategy = "open_cv"
     with xr.open_dataset(nc_file, decode_times=False) as ds:
         lon_data = ds[footprint_params['longitude_var']]
         lat_data = ds[footprint_params['latitude_var']]
@@ -321,4 +320,5 @@ def test_forge_py_open_cv():
         wkt_alphashape = forge.generate_footprint(
             lon_data, lat_data, strategy=strategy, **footprint_params
         )
+        print(wkt_alphashape)
         assert compare_shapes_similarity(wkt_alphashape, polygon_shape)
