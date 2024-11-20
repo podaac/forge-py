@@ -58,6 +58,7 @@ The configuration file specifies the parameters for generating footprints from v
   * **`min_area`** (int, optional): Minimum area for polygons to be retained.
   * **`smooth_poles`** (list of int, optional): Latitude range for smoothing near poles.
   * **`simplify`** (float, optional): Controls the level of simplification applied to extracted polygons.
+  * **`fill_value`** (float, optional, default: np.nan): Fill value in the latitude, longitude arrays.
 
 ## Example Configuration
 
@@ -81,7 +82,8 @@ The configuration file specifies the parameters for generating footprints from v
            "cutoff_lat": 80,
            "smooth_poles": [78,80],
            "simplify" : 0.3,
-           "min_area": 30
+           "min_area": 30,
+           "fill_value": -99999.0
         }
       }
     }
