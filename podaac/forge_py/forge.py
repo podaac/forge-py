@@ -20,8 +20,8 @@ def find_common_group_and_variables(lon_var, lat_var):
         GroupMismatchError: If the groups for lon_var and lat_var are different.
 
     Args:
-        lon_var (str): Full path of the longitude variable (e.g., "/group1/group2/lon").
-        lat_var (str): Full path of the latitude variable (e.g., "/group1/group2/lat").
+        lon_var (str): Full path of the longitude variable (e.g., "group1/group2/lon").
+        lat_var (str): Full path of the latitude variable (e.g., "group1/group2/lat").
 
     Returns:
         tuple: (common_group, lon_variable_name, lat_variable_name)
