@@ -177,26 +177,6 @@ def process_multipolygons(contours, hierarchy, width, height):
     return None
 
 
-def process_mask(image, fill_kernel=(20, 20)):
-    """
-    Applies morphological closing to an image mask to fill small gaps, enhancing contiguous regions.
-
-    Parameters:
-    - image (ndarray): The input binary mask image to be processed.
-    - fill_kernel (array or tuple of int, optional): The size of the structuring element (kernel) used for morphological closing.
-      Default is (20, 20).
-
-    Returns:
-    - ndarray: The processed binary image with small gaps filled.
-
-    Notes:
-    - Morphological closing is performed using a rectangular structuring element, which fills small gaps and
-      helps create smoother, more continuous regions in binary masks.
-    """
-    kernel = np.ones(fill_kernel, np.uint8)
-    return cv2.morphologyEx(image, cv2.MORPH_CLOSE, kernel)
-
-
 def convert_to_image_coords(lon, lat, image_width=3600, image_height=1800):
     """
     Converts geographic coordinates (longitude, latitude) to pixel coordinates in an image.
@@ -231,7 +211,7 @@ def convert_to_image_coords(lon, lat, image_width=3600, image_height=1800):
     return img_x, img_y
 
 
-def write_image(filename, lat, lon, image_width=3600, image_height=1800, fill_kernel=(20, 20)):
+def write_image(filename, lat, lon, image_width=3600, image_height=1800):
     """
     Creates an image from geographic coordinates, processes it to fill gaps, and saves it as a PNG file.
 
@@ -241,8 +221,6 @@ def write_image(filename, lat, lon, image_width=3600, image_height=1800, fill_ke
     - lon (float or ndarray): Longitude values of points to plot, either as a single value or an array.
     - image_width (int, optional): Width of the image in pixels. Default is 3600.
     - image_height (int, optional): Height of the image in pixels. Default is 1800.
-    - fill_kernel (array or tuple of int, optional): The size of the structuring element for morphological operations.
-      Default is (20, 20).
 
     Returns:
     - None
@@ -278,11 +256,8 @@ def write_image(filename, lat, lon, image_width=3600, image_height=1800, fill_ke
     # Set the pixel values to 255 at the calculated coordinates
     image[img_y, img_x] = 255
 
-    # Process the image (fill gaps using morphological closing)
-    processed_image = process_mask(image, fill_kernel=fill_kernel)
-
     # Save the image
-    result_image = Image.fromarray(processed_image)
+    result_image = Image.fromarray(image)
     result_image.save(filename)
 
 
@@ -377,7 +352,7 @@ def footprint_open_cv(lon, lat, pixel_height=1800, path=None, threshold_value=18
     # Create and save the image
     filename = f"{path}/image_original_{uuid.uuid4()}.png"
     processed_filename = f"{path}/image_processed_{uuid.uuid4()}.png"
-    write_image(filename, new_lat, new_lon, image_width=pixel_width, image_height=pixel_height, fill_kernel=fill_kernel)
+    write_image(filename, new_lat, new_lon, image_width=pixel_width, image_height=pixel_height)
 
     img_th = read_and_threshold_image(filename, threshold_value)
     img_cleaned = apply_morphological_operations(img_th, fill_kernel=fill_kernel, output_path=processed_filename)
