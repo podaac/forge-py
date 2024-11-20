@@ -80,7 +80,8 @@ The configuration file specifies the parameters for generating footprints from v
            "thinning": {"method": "bin_avg", "value": [0.5, 0.5]},
            "cutoff_lat": 80,
            "smooth_poles": [78,80],
-           "simplify" : 0.3
+           "simplify" : 0.3,
+           "min_area": 30
         }
       }
     }
