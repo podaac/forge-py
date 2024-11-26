@@ -8,6 +8,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Updated alpha shape algorithm with bin average thinning
+- Added in open cv strategy as an option for footprinting
+- Added in an open cv algorithm for footprinting
+- Added License
+- Update way configuration structure are for forge-py
+- Update documentations
 ### Deprecated
 ### Removed
 ### Fixed
