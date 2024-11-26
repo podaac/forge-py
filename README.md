@@ -75,7 +75,8 @@ The configuration file specifies the parameters for generating footprints from v
            "pixel_height": 1000,
            "simplify":0.3,
            "min_area": 30,
-           "fill_kernel": [30,30],
+           "fill_value": -99999.0,
+           "fill_kernel": [30,30]
         },
         "alpha_shape": {
            "alpha":0.2,
