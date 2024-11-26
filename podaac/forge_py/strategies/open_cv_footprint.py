@@ -348,8 +348,6 @@ def footprint_open_cv(lon, lat, pixel_height=1800, path=None, threshold_value=18
     else:
         valid_points = (new_lon != fill_value) & (new_lat != fill_value)
 
-    valid_points = ~np.isnan(new_lon * new_lat)
-
     new_lon = new_lon[valid_points]
     new_lat = new_lat[valid_points]
 
