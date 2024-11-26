@@ -311,7 +311,7 @@ def calculate_width_from_height(height):
     return width
 
 
-def footprint_open_cv(lon, lat, pixel_height=1800, path=None, threshold_value=185, fill_kernel=(20, 20), **kwargs):
+def footprint_open_cv(lon, lat, pixel_height=1800, path=None, threshold_value=185, fill_kernel=(20, 20), fill_value=np.nan, **kwargs):
     """
     Main pipeline for processing geographic coordinates to create a footprint polygon using image processing techniques.
 
@@ -321,6 +321,7 @@ def footprint_open_cv(lon, lat, pixel_height=1800, path=None, threshold_value=18
     - width (int, optional): Width of the output image in pixels. Default is 1800.
     - height (int, optional): Height of the output image in pixels. Default is 900.
     - threshold_value (int, optional): Threshold value for binarizing the image. Default is 185.
+    - fill_value: (float, optional):  Fill value in the latitude, longitude arrays. Default = np.nan; the default
 
     Returns:
     - str: Well-Known Text (WKT) representation of the simplified polygon created from the input coordinates.
@@ -342,7 +343,13 @@ def footprint_open_cv(lon, lat, pixel_height=1800, path=None, threshold_value=18
     new_lon = ((new_lon + 180) % 360.0) - 180
 
     # Remove NaNs from lat/lon data
+    if fill_value is np.nan:
+        valid_points = ~np.isnan(new_lon * new_lat)
+    else:
+        valid_points = (new_lon != fill_value) & (new_lat != fill_value)
+
     valid_points = ~np.isnan(new_lon * new_lat)
+
     new_lon = new_lon[valid_points]
     new_lat = new_lat[valid_points]
 

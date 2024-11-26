@@ -48,6 +48,7 @@ The configuration file specifies the parameters for generating footprints from v
   * **`min_area`** (int, optional): Minimum area for polygons to be retained.
   * **`fill_kernel`** (list of int, optional, default: [20,20]): Kernel size for filling holes in polygons.
   * **`simplify`** (float, optional,): Controls the level of simplification applied to extracted polygons.
+  * **`fill_value`** (float, optional, default: np.nan): Fill value in the latitude, longitude arrays.
 
 * **`alpha_shape`**:
   * **`alpha`** (float, optional, default: 0.05): Alpha value for the Alpha Shape algorithm, affecting the shape of polygons.
