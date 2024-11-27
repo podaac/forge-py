@@ -311,7 +311,7 @@ def calculate_width_from_height(height):
     return width
 
 
-def footprint_open_cv(lon, lat, pixel_height=1800, path=None, threshold_value=185, fill_kernel=(20, 20), fill_value=np.nan, **kwargs):
+def footprint_open_cv(lon, lat, pixel_height=1800, path=None, threshold_value=185, fill_kernel=None, fill_value=np.nan, **kwargs):
     """
     Main pipeline for processing geographic coordinates to create a footprint polygon using image processing techniques.
 
@@ -322,6 +322,7 @@ def footprint_open_cv(lon, lat, pixel_height=1800, path=None, threshold_value=18
     - height (int, optional): Height of the output image in pixels. Default is 900.
     - threshold_value (int, optional): Threshold value for binarizing the image. Default is 185.
     - fill_value: (float, optional):  Fill value in the latitude, longitude arrays. Default = np.nan; the default
+    - fill_kernel (array or tuple of int, optional): The size of the structuring element for morphological operations.
 
     Returns:
     - str: Well-Known Text (WKT) representation of the simplified polygon created from the input coordinates.
@@ -358,8 +359,9 @@ def footprint_open_cv(lon, lat, pixel_height=1800, path=None, threshold_value=18
     processed_filename = f"{path}/image_processed_{uuid.uuid4()}.png"
     write_image(new_lat, new_lon, original_filename, image_width=pixel_width, image_height=pixel_height)
 
-    img_th = read_and_threshold_image(original_filename, threshold_value)
-    img_cleaned = apply_morphological_operations(img_th, fill_kernel=fill_kernel, output_path=processed_filename)
+    img_cleaned = read_and_threshold_image(original_filename, threshold_value)
+    if fill_kernel:
+        img_cleaned = apply_morphological_operations(img_cleaned, fill_kernel=fill_kernel, output_path=processed_filename)
 
     contours, hierarchy = cv2.findContours(img_cleaned, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_NONE)
     hierarchy = hierarchy[0] if hierarchy is not None else []
