@@ -46,7 +46,7 @@ The configuration file specifies the parameters for generating footprints from v
 * **`open_cv`**:
   * **`pixel_height`** (int, optional, default: 1800): Desired pixel height for the input image.
   * **`min_area`** (int, optional): Minimum area for polygons to be retained.
-  * **`fill_kernel`** (list of int, optional, default: [20,20]): Kernel size for filling holes in polygons.
+  * **`fill_kernel`** (list of int, optional, default: None): Kernel size for filling holes in polygons.
   * **`simplify`** (float, optional,): Controls the level of simplification applied to extracted polygons.
   * **`fill_value`** (float, optional, default: np.nan): Fill value in the latitude, longitude arrays.
 
