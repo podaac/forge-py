@@ -175,7 +175,7 @@ def test_lambda_handler_cumulus(mocked_get):
     input_dir = f'{test_dir}/input'
     config_dir = f'{test_dir}/configs'
     nc_file = f'{input_dir}/measures_esdr_scatsat_l2_wind_stress_23433_v1.1_s20210228-054653-e20210228-072612.nc'
-    cfg_file = f'{config_dir}/PODAAC-CYGNS-C2H10.cfg'
+    config_file = f'{input_dir}/SCATSAT1_ESDR_L2_WIND_STRESS_V1.1.cfg'
 
     with open(nc_file, 'rb') as data:
         aws_s3.Bucket(bucket).put_object(Key='test_folder/test_granule.nc', Body=data)
@@ -191,7 +191,7 @@ def test_lambda_handler_cumulus(mocked_get):
 
     aws_s3.create_bucket(Bucket='internal-bucket')
 
-    with open(cfg_file, 'rb') as data:
+    with open(config_file, 'rb') as data:
         s3_client.put_object(Bucket='internal-bucket',
                          Key='dataset-config/JASON-1_L2_OST_GPN_E.cfg',
                          Body=data)
@@ -258,26 +258,66 @@ def test_forge_py():
     input_dir = f'{test_dir}/input'
     nc_file = f'{input_dir}/measures_esdr_scatsat_l2_wind_stress_23433_v1.1_s20210228-054653-e20210228-072612.nc'
     config_file = f'{input_dir}/SCATSAT1_ESDR_L2_WIND_STRESS_V1.1.cfg'
-    result_file = f'{test_dir}/footprint_result.txt'
+    result_file = f'{test_dir}/results/footprint_result.txt'
 
     with open(result_file, "r") as file:
         polygon_shape = file.read()
 
-    with open(config_file) as config_f:
-        read_config = json.load(config_f)
-
-    longitude_var = read_config.get('lonVar')
-    latitude_var = read_config.get('latVar')
-    is360 = read_config.get('is360', False)
-    thinning_fac = read_config.get('footprint', {}).get('thinning_fac', 100)
-    alpha = read_config.get('footprint', {}).get('alpha', 0.05)
-    strategy = read_config.get('footprint', {}).get('strategy', None)
-    simplify = read_config.get('footprint', {}).get('simplify', 0.1)
+    strategy, footprint_params = forge.load_footprint_config(config_file)
 
     # Generate footprint
     with xr.open_dataset(nc_file, decode_times=False) as ds:
-        lon_data = ds[longitude_var]
-        lat_data = ds[latitude_var]
-        wkt_alphashape = forge.generate_footprint(lon_data, lat_data, thinning_fac=thinning_fac, alpha=alpha, is360=is360, simplify=simplify, strategy=strategy)
+        lon_data = ds[footprint_params['longitude_var']]
+        lat_data = ds[footprint_params['latitude_var']]
 
+        wkt_alphashape = forge.generate_footprint(
+            lon_data, lat_data, strategy=strategy, **footprint_params
+        )
+        assert compare_shapes_similarity(wkt_alphashape, polygon_shape)
+
+
+def test_forge_py_bin_avg():
+
+    test_dir = os.path.dirname(os.path.realpath(__file__))
+    input_dir = f'{test_dir}/input'
+    nc_file = f'{input_dir}/measures_esdr_scatsat_l2_wind_stress_23433_v1.1_s20210228-054653-e20210228-072612.nc'
+    config_file = f'{input_dir}/SCATSAT1_ESDR_L2_WIND_STRESS_V1.1_bin_avg.cfg'
+    result_file = f'{test_dir}/results/footprint_result_bin_avg.txt'
+
+    with open(result_file, "r") as file:
+        polygon_shape = file.read()
+
+    strategy, footprint_params = forge.load_footprint_config(config_file)
+
+    # Generate footprint
+    with xr.open_dataset(nc_file, decode_times=False) as ds:
+        lon_data = ds[footprint_params['longitude_var']]
+        lat_data = ds[footprint_params['latitude_var']]
+
+        wkt_alphashape = forge.generate_footprint(
+            lon_data, lat_data, strategy=strategy, **footprint_params
+        )
+        assert compare_shapes_similarity(wkt_alphashape, polygon_shape)
+
+
+def test_forge_py_open_cv():
+
+    test_dir = os.path.dirname(os.path.realpath(__file__))
+    input_dir = f'{test_dir}/input'
+    nc_file = f'{input_dir}/measures_esdr_scatsat_l2_wind_stress_23433_v1.1_s20210228-054653-e20210228-072612.nc'
+    config_file = f'{input_dir}/SCATSAT1_ESDR_L2_WIND_STRESS_V1.1_open_cv.cfg'
+    result_file = f'{test_dir}/results/footprint_result_open_cv.txt'
+
+    with open(result_file, "r") as file:
+        polygon_shape = file.read()
+
+    strategy, footprint_params = forge.load_footprint_config(config_file)
+    footprint_params["path"] = test_dir
+    with xr.open_dataset(nc_file, decode_times=False) as ds:
+        lon_data = ds[footprint_params['longitude_var']]
+        lat_data = ds[footprint_params['latitude_var']]
+
+        wkt_alphashape = forge.generate_footprint(
+            lon_data, lat_data, strategy=strategy, **footprint_params
+        )
         assert compare_shapes_similarity(wkt_alphashape, polygon_shape)

@@ -5,9 +5,9 @@ import logging
 import sys
 import copy
 import json
+import os
 from datetime import datetime, timezone
 import xarray as xr
-import numpy as np
 
 from podaac.forge_py.args import parse_args
 from podaac.forge_py.file_util import make_absolute
@@ -58,28 +58,15 @@ def main(args=None):
     config_file = args.config
     local_file = args.granule
 
-    with open(config_file) as config_f:
-        read_config = json.load(config_f)
+    strategy, footprint_params = forge.load_footprint_config(config_file)
+    footprint_params["path"] = os.getcwd()
+    with xr.open_dataset(local_file, group=footprint_params.get('group'), decode_times=False) as ds:
+        lon_data = ds[footprint_params['longitude_var']]
+        lat_data = ds[footprint_params['latitude_var']]
 
-    longitude_var = read_config.get('lonVar')
-    latitude_var = read_config.get('latVar')
-    is360 = read_config.get('is360', False)
-
-    thinning_fac = read_config.get('footprint', {}).get('thinning_fac', 100)
-    alpha = read_config.get('footprint', {}).get('alpha', 0.05)
-    strategy = read_config.get('footprint', {}).get('strategy', None)
-    simplify = read_config.get('footprint', {}).get('simplify', 0.1)
-    group = read_config.get('footprint', {}).get('group')
-    cutoff_lat = read_config.get('footprint', {}).get('cutoff_lat', None)
-    smooth_poles = read_config.get('footprint', {}).get('smooth_poles', None)
-    fill_value = read_config.get('footprint', {}).get('fill_value', np.nan)
-
-    # Generate footprint
-    with xr.open_dataset(local_file, group=group, decode_times=False) as ds:
-        lon_data = ds[longitude_var]
-        lat_data = ds[latitude_var]
-        wkt_representation = forge.generate_footprint(lon_data, lat_data, thinning_fac=thinning_fac, alpha=alpha, is360=is360, simplify=simplify,
-                                                      cutoff_lat=cutoff_lat, smooth_poles=smooth_poles, strategy=strategy, fill_value=fill_value)
+        wkt_representation = forge.generate_footprint(
+            lon_data, lat_data, strategy=strategy, **footprint_params
+        )
 
     if args.output_file:
         with open(args.output_file, "w") as json_file:
