@@ -67,6 +67,7 @@ jobs:
           fi
           
           echo "new_version=${new_version}" >> $GITHUB_OUTPUT
+          echo "new_version=${new_version}" >> $GITHUB_ENV
           poetry version ${new_version}
 
       - name: Install Dependencies and Run Tests
@@ -121,7 +122,7 @@ jobs:
           git tag -a "${VERSION}" -m "Version ${VERSION}"
           git push origin "${VERSION}"
 
-      - name: Create Zip release
+      - name: Create Zip Release
         run: |
           ls -al
           cd terraform
@@ -246,7 +247,7 @@ jobs:
 
           # Override source if deploying (find .whl file in dist/)
           if [[ "${{ contains(github.event.head_commit.message, '/deploy sit') || 
-                      contains(github.event.head_commit.message, '/deploy uat') }}" == "true" ]]; then
+                     contains(github.event.head_commit.message, '/deploy uat') }}" == "true" ]]; then
             local_forge_py=$(find dist -type f -name "*.whl")
             echo "SOURCE=${local_forge_py}" >> $GITHUB_ENV
             echo "DIST_PATH=dist/" >> $GITHUB_ENV
