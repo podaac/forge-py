@@ -227,8 +227,7 @@ jobs:
           steps.pypi-test-publish.conclusion == 'success' ||
           steps.pypi-publish.conclusion == 'success' ||
           github.event.head_commit.message == '/deploy sit' ||
-          github.event.head_commit.message == '/deploy uat' ||
-          github.event.head_commit.message == '/deploy sandbox'
+          github.event.head_commit.message == '/deploy uat'
         id: meta
         uses: docker/metadata-action@v5
         with:
@@ -247,8 +246,7 @@ jobs:
 
           # Override source if deploying (find .whl file in dist/)
           if [[ "${{ contains(github.event.head_commit.message, '/deploy sit') || 
-                      contains(github.event.head_commit.message, '/deploy uat') || 
-                      contains(github.event.head_commit.message, '/deploy sandbox') }}" == "true" ]]; then
+                      contains(github.event.head_commit.message, '/deploy uat') }}" == "true" ]]; then
             local_forge_py=$(find dist -type f -name "*.whl")
             echo "SOURCE=${local_forge_py}" >> $GITHUB_ENV
             echo "DIST_PATH=dist/" >> $GITHUB_ENV
