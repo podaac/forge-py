@@ -12,6 +12,7 @@ import xarray as xr
 from cumulus_logger import CumulusLogger
 from cumulus_process import Process, s3
 from podaac.forge_py import forge
+from podaac.lambda_handler.cumulus_cli_handler.handlers import activity
 
 cumulus_logger = CumulusLogger('forge_py')
 
@@ -249,6 +250,11 @@ class FootprintGenerator(Process):
                 granule['files'] += append_output[granule_id]
 
         return self.input
+
+    @classmethod
+    def cumulus_activity(cls, arn=os.getenv('ACTIVITY_ARN')):
+        """ Run an activity using Cumulus messaging (cumulus-message-adapter) """
+        activity(cls.cumulus_handler, arn)
 
     @classmethod
     def handler(cls, event, context=None, path=None, noclean=False):
