@@ -27,10 +27,17 @@ module "forge_py_fargate" {
   ]
 
   environment = {
-    "PYTHONPATH": ":/var/task",
-    "CONFIG_BUCKET": "${var.prefix}-internal",
-    "CONFIG_DIR" : var.config_dir,
-    "CONFIG_URL" : var.config_url,
+    STACK_NAME                  = var.prefix
+    CMR_ENVIRONMENT             = var.cmr_environment
+    CUMULUS_MESSAGE_ADAPTER_DIR = "/opt/"
+    REGION                      = var.region
+    CONFIG_BUCKET               = var.config_bucket
+    CONFIG_DIR                  = var.config_dir
+    FOOTPRINT_OUTPUT_BUCKET     = var.footprint_output_bucket
+    FOOTPRINT_OUTPUT_DIR        = var.footprint_output_dir
+    CONFIG_URL                  = var.config_url
+    LOGGING_LEVEL               = var.log_level
+    PYTHONPATH                  = ":/var/task"
   }
 
   image = "${aws_ecr_repository.lambda-image-repo.repository_url}:${local.ecr_image_tag}"
