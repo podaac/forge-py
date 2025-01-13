@@ -184,9 +184,10 @@ jobs:
         env:
           POETRY_PYPI_TOKEN_PYPI: ${{ secrets.PYPI_API_TOKEN }}
           POETRY_PYPI_TOKEN_TESTPYPI: ${{ secrets.TEST_PYPI_API_TOKEN }}
+          POETRY_REQUESTS_TIMEOUT: 60
         run: |
           if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
-            poetry publish
+            poetry publish --skip-existing
           else
             poetry config repositories.testpypi https://test.pypi.org/legacy/
             poetry publish -r testpypi
