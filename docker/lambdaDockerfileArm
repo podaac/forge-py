@@ -4,6 +4,7 @@ FROM public.ecr.aws/lambda/python:3.11-arm64
 
 # Include global arg in this stage of the build
 ARG SOURCE
+ARG DIST_PATH
 
 RUN yum -q -y install gcc
 
@@ -11,10 +12,10 @@ RUN yum -q -y install gcc
 # RUN mkdir -p ${FUNCTION_DIR}
 # WORKDIR ${FUNCTION_DIR}
 
-# Install tig from artifactory
+# Install forge-py from artifactory
 COPY $DIST_PATH $DIST_PATH
 
-# install tig into working directory so we can call lambda
+# install forge-py into working directory so we can call lambda
 RUN pip3 install awslambdaric --target $LAMBDA_TASK_ROOT
 
 RUN pip3 install --no-cache-dir --force --index-url https://pypi.org/simple/ --extra-index-url https://test.pypi.org/simple/ --target "${LAMBDA_TASK_ROOT}" $SOURCE

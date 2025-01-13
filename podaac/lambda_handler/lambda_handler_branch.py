@@ -58,7 +58,7 @@ class FootprintBranch(Process):
     process()
         main function ran for image generation
     get_config()
-        downloads configuration file for tig
+        downloads configuration file for forge-py
     """
 
     def __init__(self, *args, **kwargs):
