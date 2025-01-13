@@ -170,7 +170,7 @@ jobs:
           FILE=$(ls dist/*.whl dist/*.tar.gz | head -n 1)
           PUBLISHED_VERSION=$(basename "$FILE" | sed -E 's/^.*-([0-9]+\.[0-9]+\.[0-9a-zA-Z]+(\.[0-9]+)?)-.*$/\1/')
           pip install tenacity logging 
-          python3 ${GITHUB_WORKSPACE}/.github/workflows/wait-for-pypi.py ${{needs.build.outputs.pyproject_name}}[harmony]==$PUBLISHED_VERSION
+          python3 ${GITHUB_WORKSPACE}/.github/workflows/wait-for-pypi.py ${{needs.build.outputs.pyproject_name}}==$PUBLISHED_VERSION
 
   publish:
     name: Build & Publish Docker
