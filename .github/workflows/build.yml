@@ -144,6 +144,34 @@ jobs:
           prerelease: ${{ github.ref != 'refs/heads/main' }}
           body: "Version ${{ env.new_version }}"
 
+      - name: Publish to PyPI
+        if: |
+          github.ref == 'refs/heads/develop' ||
+          github.ref == 'refs/heads/main' ||
+          startsWith(github.ref, 'refs/heads/release/')
+        env:
+          POETRY_PYPI_TOKEN_PYPI: ${{ secrets.PYPI_API_TOKEN }}
+          POETRY_PYPI_TOKEN_TESTPYPI: ${{ secrets.TEST_PYPI_API_TOKEN }}
+          POETRY_REQUESTS_TIMEOUT: 60
+        run: |
+          if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            poetry publish --skip-existing
+          else
+            poetry config repositories.testpypi https://test.pypi.org/legacy/
+            poetry publish -r testpypi
+          fi
+
+      - name: Wait for package
+        if: |
+          github.ref == 'refs/heads/develop' ||
+          github.ref == 'refs/heads/main' ||
+          startsWith(github.ref, 'refs/heads/release/')
+        run: |
+          FILE=$(ls dist/*.whl dist/*.tar.gz | head -n 1)
+          PUBLISHED_VERSION=$(basename "$FILE" | sed -E 's/^.*-([0-9]+\.[0-9]+\.[0-9a-zA-Z]+(\.[0-9]+)?)-.*$/\1/')
+          pip install tenacity logging 
+          python3 ${GITHUB_WORKSPACE}/.github/workflows/wait-for-pypi.py ${{needs.build.outputs.pyproject_name}}[harmony]==$PUBLISHED_VERSION
+
   publish:
     name: Build & Publish Docker
     needs: build
@@ -175,32 +203,6 @@ jobs:
 
       - name: Build Package
         run: poetry build
-
-      - name: Publish to PyPI
-        if: |
-          github.ref == 'refs/heads/develop' ||
-          github.ref == 'refs/heads/main' ||
-          startsWith(github.ref, 'refs/heads/release/')
-        env:
-          POETRY_PYPI_TOKEN_PYPI: ${{ secrets.PYPI_API_TOKEN }}
-          POETRY_PYPI_TOKEN_TESTPYPI: ${{ secrets.TEST_PYPI_API_TOKEN }}
-          POETRY_REQUESTS_TIMEOUT: 60
-        run: |
-          if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
-            poetry publish --skip-existing
-          else
-            poetry config repositories.testpypi https://test.pypi.org/legacy/
-            poetry publish -r testpypi
-          fi
-
-      - name: Wait for package
-        if: |
-          github.ref == 'refs/heads/develop' ||
-          github.ref == 'refs/heads/main' ||
-          startsWith(github.ref, 'refs/heads/release/')
-        run: |
-          pip install tenacity logging 
-          python3 ${GITHUB_WORKSPACE}/.github/workflows/wait-for-pypi.py ${{needs.build.outputs.pyproject_name}}[harmony]==${{ needs.build.outputs.version }}
 
       - name: Set Environment Variables
         run: |
