@@ -247,7 +247,7 @@ jobs:
         id: set-source
         run: |
           # Default build source for standard branches
-          echo "SOURCE=${{ ${{ needs.build.outputs.pyproject_name }} }}==${{ ${{ needs.build.outputs.publish_version }} }}" >> $GITHUB_ENV
+          echo "SOURCE=${{ needs.build.outputs.pyproject_name }}==${{ needs.build.outputs.publish_version }}" >> $GITHUB_ENV
 
           # Override source if deploying (find .whl file in dist/)
           if [[ "${{ contains(github.event.head_commit.message, '/deploy sit') || 
