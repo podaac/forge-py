@@ -273,5 +273,5 @@ jobs:
           build-args: |
             SOURCE=${{ env.SOURCE }}
             DIST_PATH=${{ env.DIST_PATH || '' }}
-          cache-from: type=registry,ref=ghcr.io/${{ github.repository }}/cache:cache
-          cache-to: type=registry,ref=ghcr.io/${{ github.repository }}/cache:cache,mode=max
+          cache-from: type=registry,ref=ghcr.io/${{ github.repository }}/cache:forge-py-cache
+          cache-to: type=registry,ref=ghcr.io/${{ github.repository }}/cache:forge-py-cache,mode=max
