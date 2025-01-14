@@ -8,8 +8,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+### Deprecated
+### Removed
+### Fixed
+
+
+## [0.4.0]
+
+### Added
 - Added in forge-py fargate terraform code
-- Update and cleaned up github action
+- Updated and cleaned up github action
 ### Deprecated
 ### Removed
 ### Fixed
