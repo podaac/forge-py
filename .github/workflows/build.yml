@@ -43,6 +43,7 @@ jobs:
           echo "pyproject_name=${pyproject_name}" >> $GITHUB_OUTPUT
           
           current_version=$(poetry version -s)
+          base_version=${current_version%%-*}
           echo "old_version=${current_version}" >> $GITHUB_ENV
           
           # Version calculation based on branch
@@ -51,19 +52,19 @@ jobs:
           elif [[ "${{ github.ref }}" == "refs/heads/develop" ]]; then
             if [[ ${current_version} =~ -alpha ]]; then
               alpha_num=$((${current_version##*alpha.} + 1))
-              new_version="${current_version%%-*}-alpha.${alpha_num}"
+              new_version="${base_version%%-*}-alpha.${alpha_num}"
             else
-              new_version="${current_version}-alpha.1"
+              new_version="${base_version}-alpha.1"
             fi
           elif [[ "${{ github.ref }}" =~ ^refs/heads/release/ ]]; then
             if [[ ${current_version} =~ -rc ]]; then
               rc_num=$((${current_version##*rc.} + 1))
-              new_version="${current_version%%-*}-rc.${rc_num}"
+              new_version="${base_version%%-*}-rc.${rc_num}"
             else
-              new_version="${current_version}-rc.1"
+              new_version="${base_version}-rc.1"
             fi
           elif [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
-            new_version=${current_version%%-*}
+            new_version=${base_version%%-*}
           fi
           
           echo "new_version=${new_version}" >> $GITHUB_OUTPUT
