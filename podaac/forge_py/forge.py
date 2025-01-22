@@ -148,6 +148,10 @@ def generate_footprint(lon, lat, strategy=None, is360=False, path=None, **kwargs
     if is360:
         lon = ((lon + 180) % 360.0) - 180
 
+    is_lon_lat_invalid = are_all_lon_lat_invalid(lon, lat)
+    if is_lon_lat_invalid:
+        raise Exception("Can't generate footprint for empty granule")
+
     # Dispatch to the correct footprint strategy based on `strategy`
     if strategy == "open_cv":
         footprint = open_cv_footprint.footprint_open_cv(lon, lat, path=path, **kwargs)
@@ -164,3 +168,26 @@ def generate_footprint(lon, lat, strategy=None, is360=False, path=None, **kwargs
         footprint = remove_small_polygons(footprint, kwargs['min_area'])
 
     return dumps(footprint, trim=True)
+
+
+def are_all_lon_lat_invalid(lon, lat):
+    """
+    Checks if all longitude and latitude values in a NetCDF file are invalid.
+
+    Parameters:
+        lon (array): longitude values.
+        lat (array): latitude values.
+
+    Returns:
+        bool: True if all longitude and latitude values are invalid, False otherwise.
+    """
+
+    # Define valid ranges
+    valid_lon = (lon >= -180) & (lon <= 180)
+    valid_lat = (lat >= -90) & (lat <= 90)
+
+    # Check if all values are invalid
+    all_invalid_lon = (~valid_lon).all().item()
+    all_invalid_lat = (~valid_lat).all().item()
+
+    return all_invalid_lon and all_invalid_lat
