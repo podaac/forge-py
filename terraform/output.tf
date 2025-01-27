@@ -13,3 +13,7 @@ output "forge_branch_task_lambda_arn"{
 output "cloudwatch_forge_branch_task_lambda_name" {
   value = aws_cloudwatch_log_group.forge_branch_task.name
 }
+
+output "forge_py_ecs_task_id" {
+  value = aws_sfn_activity.forge_py_ecs_task.id
+}
