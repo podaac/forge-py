@@ -51,7 +51,7 @@ jobs:
           elif [[ "${{ github.ref }}" == "refs/heads/develop" ]]; then
             new_version=$(poetry version prerelease -s)
           elif [[ "${{ github.ref }}" =~ ^refs/heads/release/ ]]; then
-            if [[ ${current_version} =~ -rc ]]; then
+            if [[ ${current_version} =~ rc ]]; then
               new_version=$(poetry version prerelease -s)
             else
               new_version="${GITHUB_REF#refs/heads/release/}rc1"
@@ -129,7 +129,8 @@ jobs:
           github.ref == 'refs/heads/develop' ||
           github.ref == 'refs/heads/main'    ||
           startsWith(github.ref, 'refs/heads/release') ||
-          contains(github.event.head_commit.message, '/deploy')
+          github.event.head_commit.message == '/deploy sit' ||
+          github.event.head_commit.message == '/deploy uat'
         uses: ncipollo/release-action@v1.14.0
         with:
           tag: ${{ env.new_version }}
@@ -174,7 +175,8 @@ jobs:
         github.ref == 'refs/heads/develop' ||
         github.ref == 'refs/heads/main' ||
         startsWith(github.ref, 'refs/heads/release') ||
-        contains(github.event.head_commit.message, '/deploy')
+        github.event.head_commit.message == '/deploy sit' ||
+        github.event.head_commit.message == '/deploy uat'
       )
     runs-on: ubuntu-latest
     permissions:
@@ -209,7 +211,9 @@ jobs:
           fi
 
       - name: Deploy Env Override
-        if: contains(github.event.head_commit.message, '/deploy')
+        if: |
+          github.event.head_commit.message == '/deploy sit' ||
+          github.event.head_commit.message == '/deploy uat'
         run: |
           message="${{ github.event.head_commit.message }}"
           trimmed_message=${message:1}  # Remove leading slash
@@ -231,7 +235,7 @@ jobs:
           flavor: |
             latest=${{ github.ref == 'refs/heads/main' }}
           tags: |
-            type=semver,pattern={{raw}},value=${{ needs.build.outputs.version }}
+            type=pep440,pattern={{version}},value=${{ needs.build.outputs.version }}
             type=raw,value=${{ env.TARGET_ENV_LOWERCASE }}
 
       - name: Set Build Source
@@ -241,8 +245,8 @@ jobs:
           echo "SOURCE=${{ needs.build.outputs.pyproject_name }}==${{ needs.build.outputs.version }}" >> $GITHUB_ENV
 
           # Override source if deploying (find .whl file in dist/)
-          if [[ "${{ contains(github.event.head_commit.message, '/deploy sit') || 
-                     contains(github.event.head_commit.message, '/deploy uat') }}" == "true" ]]; then
+          if [[ "${{ github.event.head_commit.message }}" == "/deploy sit" || 
+                "${{ github.event.head_commit.message }}" == "/deploy uat" ]]; then
             local_forge_py=$(find dist -type f -name "*.whl")
             echo "SOURCE=${local_forge_py}" >> $GITHUB_ENV
             echo "DIST_PATH=dist/" >> $GITHUB_ENV
@@ -269,5 +273,5 @@ jobs:
           build-args: |
             SOURCE=${{ env.SOURCE }}
             DIST_PATH=${{ env.DIST_PATH || '' }}
-          cache-from: type=registry,ref=ghcr.io/${{ github.repository }}/cache:cache
-          cache-to: type=registry,ref=ghcr.io/${{ github.repository }}/cache:cache,mode=max
+          cache-from: type=registry,ref=ghcr.io/${{ github.repository }}/cache:forge-py-cache
+          cache-to: type=registry,ref=ghcr.io/${{ github.repository }}/cache:forge-py-cache,mode=max

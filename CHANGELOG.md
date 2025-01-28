@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Added in forge-py fargate terraform code
 - Updated and cleaned up github action
+- Added new function to check for valid longitude and latitude values for granule.
 ### Deprecated
 ### Removed
 ### Fixed
