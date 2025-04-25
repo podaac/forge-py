@@ -4,7 +4,7 @@
 import json
 from shapely.geometry import Polygon, MultiPolygon
 from shapely.wkt import dumps
-from podaac.forge_py.strategies import open_cv_footprint, alpha_shape_footprint
+from podaac.forge_py.strategies import open_cv_footprint, alpha_shape_footprint, shapely_linestring_footprint
 
 
 class GroupMismatchError(Exception):
@@ -155,6 +155,10 @@ def generate_footprint(lon, lat, strategy=None, is360=False, path=None, **kwargs
     # Dispatch to the correct footprint strategy based on `strategy`
     if strategy == "open_cv":
         footprint = open_cv_footprint.footprint_open_cv(lon, lat, path=path, **kwargs)
+    elif strategy == "shapely_linestring":
+        footprint = shapely_linestring_footprint.fit_footprint(lon, lat, **kwargs)
+        if not footprint.is_valid:
+            footprint = footprint.buffer(0)
     else:
         footprint = alpha_shape_footprint.fit_footprint(lon, lat, **kwargs)
         if not footprint.is_valid:
