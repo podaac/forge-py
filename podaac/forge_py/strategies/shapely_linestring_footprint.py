@@ -2,7 +2,7 @@
 
 import numpy as np
 import shapely
-from shapely import LineString
+from shapely import LineString, MultiLineString
 
 
 def fit_footprint(lon, lat, tolerance=0.9, **kwargs):
@@ -53,7 +53,7 @@ def split_linestring_idl(lons, lats):
     
     # Split lon, lat on these indices, to create a list of arrays for each linestring segment:
     if len(i_cross) > 0:
-        i_split = [0] + list(i_cross) + [len(lons_test)] # Index bounds to subset on. Add first/last
+        i_split = [0] + list(i_cross) + [len(lons)] # Index bounds to subset on. Add first/last
         lons_split, lats_split = [], []
         for j in range(len(i_split)-1):
             lons_split.append(lons[i_split[j]:i_split[j+1]])
