@@ -10,7 +10,7 @@ def fit_footprint(lon, lat, tolerance=0.9, **kwargs):
     Fits instrument coverage footprint for level 2 linestring data (e.g coverage 
     falls on a single line or curve). Uses a function from the Shapely package, 
     shapely.simplify(). Output is a polygon object for the indices of the footprint 
-    outline. Returns a shapely.geometry.linestring.LineString object.
+    outline. Returns a shapely.MultiLineString object.
 
     Inputs
     ------
