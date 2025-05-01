@@ -87,5 +87,9 @@ The configuration file specifies the parameters for generating footprints from v
            "min_area": 30,
            "fill_value": -99999.0
         }
+        "shapely_linestring":{
+          "tolerance": 0.9,
+          "simplify": 0.9
+        }
       }
     }
