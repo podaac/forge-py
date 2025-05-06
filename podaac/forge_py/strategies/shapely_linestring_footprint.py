@@ -48,19 +48,13 @@ def split_linestring_idl(lons, lats):
     lons = np.array(lons)
     lats = np.array(lats)
     dlons_abs = abs(lons[1:] - lons[:-1])
-    #dlons_abs[np.where(dlons_abs > 359)]  # Use 359 instead of 360 to be safe.
-    i_cross = np.where(dlons_abs > 359)[0] + 1  # +1 for translating dlon index to lon index.
+    i_cross = np.where(dlons_abs > 359)[0] + 1  # Use 359 instead of 360 to be safe.
+                                                # +1 for translating dlon index to lon index.
 
     # Split lon, lat on these indices, to create a list of arrays for each linestring segment:
     if len(i_cross) > 0:
         lons_split = np.split(lons, i_cross)
         lats_split = np.split(lats, i_cross)
-        # i_split = [0] + list(i_cross) + [len(lons)]  # Index bounds to subset on. Add first/last
-        # lons_split, lats_split = [], []
-        # for j in range(len(i_split)-1):
-        #     lons_split.append(lons[i_split[j]:i_split[j+1]])
-        #     lats_split.append(lats[i_split[j]:i_split[j+1]])
-
         return lons_split, lats_split
 
     else:  # if no splitting needed, return lons, lats as single arrays:
