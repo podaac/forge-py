@@ -61,6 +61,10 @@ The configuration file specifies the parameters for generating footprints from v
   * **`simplify`** (float, optional): Controls the level of simplification applied to extracted polygons.
   * **`fill_value`** (float, optional, default: np.nan): Fill value in the latitude, longitude arrays.
 
+* **`shapely_linestring`**:
+  * **`tolerance`** (float, optional, default: 0.9): The maximum allowed geometry 
+displacement. The lower the value, the more features / vertices are resolved.
+
 ## Example Configuration
 
 ```json
@@ -86,6 +90,10 @@ The configuration file specifies the parameters for generating footprints from v
            "simplify" : 0.3,
            "min_area": 30,
            "fill_value": -99999.0
+        }
+        "shapely_linestring":{
+          "tolerance": 0.9,
+          "simplify": 0.9
         }
       }
     }

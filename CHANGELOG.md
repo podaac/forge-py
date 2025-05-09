@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Added shapely_linestring.py script in strategies for footprinting linestrings.
+- Added code in forge.py to include the shapely_linestring option.
+- Updated readme file to include sample json with shapely_linestring params.
 ### Deprecated
 ### Removed
 ### Fixed
