@@ -85,7 +85,7 @@ If a strategy is specified, the corresponding field to set parameters for that s
   * **`pixel_height`** (int, optional, default: 1800): Desired pixel height for the input image.
   * **`min_area`** (int, optional): Minimum area for polygons to be retained.
   * **`fill_kernel`** (list of int, optional, default: None): Kernel size for filling holes in polygons.
-  * **`simplify`** (float, optional): Controls the level of simplification applied to extracted polygons.
+  * **`simplify`** (float, optional): Controls the level of simplification applied to extracted polygons. Valid range is (0 - 1). A higher value simplifies the footprint to fewer points.
   * **`fill_value`** (float, optional, default: np.nan): Fill value in the latitude, longitude arrays.
 
 * **`alpha_shape`** (dict, optional): A dictionary-like mapping of parameters to use with the `alpha_shape` algorithm. Parameters that can be included are:
@@ -96,10 +96,9 @@ If a strategy is specified, the corresponding field to set parameters for that s
   * **`cutoff_lat`** (int, optional): Latitude above which data will be ignored.
   * **`smooth_poles`** (2-tuple of int, optional): In some cases, the poleward edge of the footprints have artifacts (e.g. jagged edges). This parameter can be used to retroactively smooth the poleward edge of the footprint. The first element is the latitude above which all points should be set to the second element. For example, `smooth_poles`=(78, 80) will take all points northward/southward of +/- 78 and change the latitude value to +/- 80, respectively.
   * **`min_area`** (int, optional): Minimum area for a polygon to be retained.
-  * **`simplify`** (float, optional): Controls the level of simplification applied to extracted polygons.
+  * **`simplify`** (float, optional): Controls the level of simplification applied to extracted polygons. Valid range is (0 - 1). A higher value simplifies the footprint to fewer points.
   * **`fill_value`** (float, optional, default: np.nan): Fill value in the latitude, longitude arrays.
 
 * **`shapely_linestring`**: A dictionary-like mapping of parameters to use with the `shapely_linestring` algorithm. Parameters that can be included are:
-  * **`tolerance`** (float, optional, default: 0.9): The maximum allowed geometry 
-displacement. The lower the value, the more features / vertices are resolved.
+  * **`tolerance`** (float, optional, default: 0.9): Valid range is (0 - 1). A higher value will simplify the footprint to fewer points. A lower value retains more features / vertices.
 
