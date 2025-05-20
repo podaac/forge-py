@@ -2,6 +2,7 @@
 
 The Footprint Generator project provides tools for generating geographic footprints from various data sources. This tool supports different generation strategies applicable to variable geometry types. Requires parameters for `forge-py` to be saved in a configuration file (see below), and data files saved in either netCDF and HDF format.
 
+
 ## Installation
 
 **Using pip:**
@@ -16,19 +17,24 @@ pip install forge-py
 poetry install
 ```
 
+
 ## Usage
 
-Once `forge-py` is install into an environment, it is used via the CLI without needing to be imported:
+Once `forge-py` is installed in an environment, it is used via the CLI without needing to be imported, e.g.:
 
 ```bash
 forge-py -c configuration_file.cfg -g granule_file.nc
 ```
+
+and will return the indices of the footprint in WKT (Well-Known Text) format.
 
 The forge-py command-line tool accepts the following options:
 
 - **`-c`, `--config`**: _(Required)_ Specifies the path to the configuration file. This file contains parameters for customizing the footprint generation process (see below).
 
 - **`-g`, `--granule`**: _(Required)_ Specifies the path to the data granule file. This file contains the raw data used to generate the footprints.
+
+- **`-o`**: _(Optional)_ File name to save output to.
 
 
 ## Footprint Configuration File
