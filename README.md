@@ -81,7 +81,7 @@ The configuration file (typically JSON) specifies the parameters for generating 
 
 If a strategy is specified, the corresponding field to set parameters for that strategy should also be included.
 
-* **`open_cv`**:
+* **`open_cv`**: A dictionary-like mapping of parameters to use with the `open_cv` algorithm. Parameters that can be included are:
   * **`pixel_height`** (int, optional, default: 1800): Desired pixel height for the input image.
   * **`min_area`** (int, optional): Minimum area for polygons to be retained.
   * **`fill_kernel`** (list of int, optional, default: None): Kernel size for filling holes in polygons.
@@ -99,7 +99,7 @@ If a strategy is specified, the corresponding field to set parameters for that s
   * **`simplify`** (float, optional): Controls the level of simplification applied to extracted polygons.
   * **`fill_value`** (float, optional, default: np.nan): Fill value in the latitude, longitude arrays.
 
-* **`shapely_linestring`**:
+* **`shapely_linestring`**: A dictionary-like mapping of parameters to use with the `shapely_linestring` algorithm. Parameters that can be included are:
   * **`tolerance`** (float, optional, default: 0.9): The maximum allowed geometry 
 displacement. The lower the value, the more features / vertices are resolved.
 
