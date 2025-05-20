@@ -74,10 +74,11 @@ The configuration file (typically JSON) specifies the parameters for generating 
 * **`latVar`** (string, required): Latitude variable in the dataset include group if in one.
 * **`timevar`** (string, optional): Time variable in the dataset include group if in one.
 * **`is360`** (boolean, optional, default: False): Indicates if the data is in 360 format.
-* **`strategy`** (optional, default: alpha_shape): The algorithm to use for fitting the footprint. Options are:
-  * **`alpha_shape`**: Applicable for 2D geometries like satellite swaths. Can handle file formats where the longtidue, latitude variables have dimensions `cross_track`, `along_track`, or files where the lon, lat variables are dimensions themselves and are 1D. Employs the Alpha Shape package / algorithm to construct footprints from point data.
-  * **`open_cv`**: Uses OpenCV-based image processing techniques to extract footprints.
-  * **`shapely_linestring`**: Applicable for linestring geometries, e.g. "1D" curves / paths. Utilizes the shapely package.
+* **`strategy`** (string, optional, default: alpha_shape): The algorithm to use for fitting the footprint. Options are:
+  * **"alpha_shape"**: Applicable for 2D geometries like satellite swaths. Can handle file formats where the longtidue, latitude variables have dimensions `cross_track`, `along_track`, or files where the lon, lat variables are dimensions themselves and are 1D. Employs the Alpha Shape package / algorithm to construct footprints from point data.
+  * **"open_cv"**: Uses OpenCV-based image processing techniques to extract footprints.
+  * **"shapely_linestring"**: Applicable for linestring geometries, e.g. "1D" curves / paths. Utilizes the shapely package.
+
 If a strategy is specified, the corresponding field below to set parameters for that strategy should also be included.
 
 * **`open_cv`**:
@@ -93,7 +94,7 @@ If a strategy is specified, the corresponding field below to set parameters for 
     * **`method`** (string): Thinning method to apply to the Alpha Shape. Options are "standard" and "bin_avg". "standard" will flatten the lon, lat arrays and keep every nth element. "bin_avg" will bin and average the lons, lats to a specified resolution.
     * **`value`** (list of float or float): Thinning parameter(s). If `method` is "standard", `value` is a single float specifying n, where every nth element will be retained. If `method` is "bin_avg", `value` is a 2-element list-like for the longitude and latitude bin widths to average over.
   * **`cutoff_lat`** (int, optional): Latitude above which data will be ignored.
-  * **`smooth_poles`** (2-tuple of int, optional): In some cases, the poleward edge of the footprints have artifacts (e.g. jagged edges). This parameter can be used to retroactively smooth the poleward edge of the footprint. The first element is the latitude above which all points should be "ceiling"'d to the second element. For example, `smooth_poles`=(78, 80) will take all points northward/southward of +/- 78 and change the latitude value to +/- 80, respectively.
+  * **`smooth_poles`** (2-tuple of int, optional): In some cases, the poleward edge of the footprints have artifacts (e.g. jagged edges). This parameter can be used to retroactively smooth the poleward edge of the footprint. The first element is the latitude above which all points should be set to the second element. For example, `smooth_poles`=(78, 80) will take all points northward/southward of +/- 78 and change the latitude value to +/- 80, respectively.
   * **`min_area`** (int, optional): Minimum area for a polygon to be retained.
   * **`simplify`** (float, optional): Controls the level of simplification applied to extracted polygons.
   * **`fill_value`** (float, optional, default: np.nan): Fill value in the latitude, longitude arrays.
