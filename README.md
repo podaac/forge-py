@@ -68,7 +68,7 @@ The configuration file (typically JSON) specifies the parameters for generating 
     }
 ```
 
-### Explanation of Fields
+### Description of Fields
 
 * **`lonVar`** (string, required): Longitude variable in the dataset include group if in one.
 * **`latVar`** (string, required): Latitude variable in the dataset include group if in one.
@@ -79,7 +79,7 @@ The configuration file (typically JSON) specifies the parameters for generating 
   * **"open_cv"**: Uses OpenCV-based image processing techniques to extract footprints.
   * **"shapely_linestring"**: Applicable for linestring geometries, e.g. "1D" curves / paths. Utilizes the shapely package.
 
-If a strategy is specified, the corresponding field below to set parameters for that strategy should also be included.
+If a strategy is specified, the corresponding field to set parameters for that strategy should also be included.
 
 * **`open_cv`**:
   * **`pixel_height`** (int, optional, default: 1800): Desired pixel height for the input image.
