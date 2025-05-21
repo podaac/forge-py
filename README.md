@@ -68,7 +68,7 @@ The configuration file (typically JSON) specifies the parameters for generating 
            "fill_value": -99999.0
         },
         "shapely_linestring": {
-          "tolerance": 0.9
+          "simplify": 0.9
         }
       }
     }
@@ -106,5 +106,5 @@ If a strategy is specified, the corresponding field to set parameters for that s
   * **`fill_value`** (float, optional, default: np.nan): Fill value in the latitude, longitude arrays.
 
 * **`shapely_linestring`**: A dictionary-like mapping of parameters to use with the `shapely_linestring` algorithm. Parameters that can be included are:
-  * **`tolerance`** (float, optional, default: 0.9): Valid range is (0 - 1). A higher value will simplify the footprint to fewer points. A lower value retains more features / vertices.
+  * **`simplify`** (float, optional, default: 0.9): Valid range is (0 - 1). A higher value will simplify the footprint to fewer points. A lower value retains more features / vertices.
 

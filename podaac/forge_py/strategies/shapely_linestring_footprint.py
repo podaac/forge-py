@@ -5,7 +5,7 @@ import shapely
 from shapely import LineString, MultiLineString
 
 
-def fit_footprint(lon, lat, tolerance=0.9, **kwargs):
+def fit_footprint(lon, lat, simplify=0.9, **kwargs):
     """
     Fits instrument coverage footprint for level 2 linestring data (e.g coverage
     falls on a single line or curve). Uses a function from the Shapely package,
@@ -25,7 +25,7 @@ def fit_footprint(lon, lat, tolerance=0.9, **kwargs):
     lon = np.array(lon)
     lat = np.array(lat)
     points = LineString([(x, y) for x, y in zip(lon, lat)])
-    fit = shapely.simplify(points, tolerance=tolerance)
+    fit = shapely.simplify(points, tolerance=simplify)
 
     # Segment the footprint at international dateline crossings:
     fit_splitted = split_linestring_idl(fit.xy[0], fit.xy[1])
