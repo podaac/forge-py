@@ -21,7 +21,7 @@ netcdf4 = "^1.6.5"
 pillow = "^11.0.0"
 opencv-python-headless = "^4.10.0.84"
 
-[tool.poetry.dev-dependencies]
+[poetry.group.dev.dependencies]
 pytest = "^8.0.1"
 flake8 = "^7.0.0"
 pylint = "^3.0.3"
