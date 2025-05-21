@@ -21,18 +21,19 @@ netcdf4 = "^1.6.5"
 pillow = "^11.0.0"
 opencv-python-headless = "^4.10.0.84"
 
-[poetry.group.dev.dependencies]
+[tool.poetry.group.dev]
+optional = false
+
+[tool.poetry.group.dev.dependencies]
 pytest = "^8.0.1"
 flake8 = "^7.0.0"
 pylint = "^3.0.3"
 pytest-cov = "^6.0.0"
+moto = "^5.0.13"
+mock = "^5.1.0"
 
 [tool.poetry.scripts]
 forge-py = "podaac.forge_py.cli:main"
-
-[tool.poetry.group.dev.dependencies]
-moto = "^5.0.13"
-mock = "^5.1.0"
 
 [build-system]
 requires = ["poetry-core"]
