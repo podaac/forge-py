@@ -13,6 +13,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 
+## [0.5.0]
+
+### Added
+- Renamed project to podaac-forge-py
+- Added new strategy **`shapely_linestring`** for footprinting linestrings
+- Updated README.md to include sample json with shapely_linestring params
+### Deprecated
+### Removed
+### Fixed
+
+
 ## [0.4.0]
 
 ### Added
