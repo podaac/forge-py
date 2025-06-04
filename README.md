@@ -8,7 +8,7 @@ The Footprint Generator project provides tools for generating geographic footpri
 **Using pip:**
 
 ```bash
-pip install forge-py
+pip install podaac-forge-py
 ```
 
 **Using poetry:**
