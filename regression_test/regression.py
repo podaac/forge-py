@@ -91,14 +91,13 @@ class TestForgePy:
 
     test_dir = os.path.dirname(os.path.realpath(__file__))
     palette_dir = f'{test_dir}/palettes'
-    output_dir = f'{test_dir}/output'
     config_dir = f'{test_dir}/regression_output'
     token = bearer_token()
 
     @pytest.fixture(scope="session")
     def setup_and_teardown(self):
 
-        os.makedirs(self.output_dir, exist_ok=True)
+        os.makedirs(self.config_dir, exist_ok=True)
 
         yield
 
