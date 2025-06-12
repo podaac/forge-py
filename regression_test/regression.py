@@ -90,7 +90,6 @@ def bearer_token():
 class TestForgePy:
 
     test_dir = os.path.dirname(os.path.realpath(__file__))
-    palette_dir = f'{test_dir}/palettes'
     config_dir = f'{test_dir}/regression_output'
     token = bearer_token()
 
