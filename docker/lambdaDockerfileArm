@@ -6,8 +6,11 @@ FROM public.ecr.aws/lambda/python:3.11-arm64
 ARG SOURCE
 ARG DIST_PATH
 
-RUN yum -q -y install gcc gcc-c++
-
+# Install GCC 9 and set as default
+RUN yum -y install gcc9 gcc9-c++ && \
+    alternatives --install /usr/bin/gcc gcc /usr/bin/gcc9 100 && \
+    alternatives --install /usr/bin/g++ g++ /usr/bin/g++9 100
+    
 # Create function directory
 # RUN mkdir -p ${FUNCTION_DIR}
 # WORKDIR ${FUNCTION_DIR}
