@@ -1,17 +1,12 @@
 #ARG FUNCTION_DIR="/function"
 
-FROM public.ecr.aws/lambda/python:3.13.2025.08.02.13-arm64
+FROM public.ecr.aws/lambda/python:3.11-arm64
 
 # Include global arg in this stage of the build
 ARG SOURCE
 ARG DIST_PATH
 
-RUN amazon-linux-extras enable gcc11
-RUN yum -y install gcc11 gcc11-c++
-
-# Set gcc/g++ to point to gcc11
-RUN alternatives --install /usr/bin/gcc gcc /usr/bin/gcc11 100 \
-    && alternatives --install /usr/bin/g++ g++ /usr/bin/g++11 100
+RUN yum -q -y install gcc
 
 # Create function directory
 # RUN mkdir -p ${FUNCTION_DIR}
