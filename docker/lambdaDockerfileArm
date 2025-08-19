@@ -6,11 +6,7 @@ FROM public.ecr.aws/lambda/python:3.11-arm64
 ARG SOURCE
 ARG DIST_PATH
 
-# Enable EPEL and install GCC 9 and G++ 9
-RUN yum -y install epel-release && \
-    yum -y install gcc9 gcc9-c++ make && \
-    alternatives --install /usr/bin/gcc gcc /usr/bin/gcc9 100 && \
-    alternatives --install /usr/bin/g++ g++ /usr/bin/g++9 100
+RUN yum -q -y install gcc
 
 # Create function directory
 # RUN mkdir -p ${FUNCTION_DIR}
