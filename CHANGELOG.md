@@ -8,6 +8,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+### Deprecated
+### Removed
+### Fixed
+
+## [0.6.0]
+
+### Added
 - Added in requester pay flag into s3 calls
 ### Deprecated
 ### Removed
