@@ -40,33 +40,22 @@ def fit_footprint(lon, lat, simplify=0.9, max_dist=None, **kwargs):
         points_segments.append(LineString([(x, y) for x, y in zip(lonseg, latseg)]))
 
     # Fit, either whole path or each segment if there was splitting:
-    fit_segs = [ shapely.simplify(pts, tolerance=simplify) for pts in points_segments ]
-
-    # Split any footprint segments at international dateline crossings:
+    fit = [ shapely.simplify(pts, tolerance=simplify) for pts in points_segments ]
     
-    for fit in fit_segs:
-        fit_split_idl = split_path_idl(fit.xy[0], fit.xy[1])
-    
-    #points = LineString([(x, y) for x, y in zip(lon, lat)])
-    #fit = shapely.simplify(points, tolerance=simplify)
+    # Split any footprint segments at international dateline crossings.
+    # During this process there is an awkward recasting of paths from LineString 
+    # objs to a list of np.arrays, which accounts for most of the code below:
+    fit_idlsplit = [[],[]]  # First element for lons, 2nd element for lats.
+    for seg in fit:
+        lons_split_idl, lats_split_idl = split_path_idl(seg.xy[0], seg.xy[1])
+        fit_idlsplit[0] = fit_idlsplit[0] + lons_split_idl
+        fit_idlsplit[1] = fit_idlsplit[1] + lats_split_idl
 
-    # Segment the footprint at international dateline crossings:
-    #fit_split_idl = split_path_idl(fit.xy[0], fit.xy[1])
-
-    # If no additional splitting needed, repackage into MultiLineString and return:
-    segments = []
-    if max_dist is None:
-        for i in range(len(fit_split_idl[0])):
-            segments.append([(x, y) for x, y in zip(fit_split_idl[0][i], fit_split_idl[1][i])])
-        return MultiLineString(segments)
-    # Else, optional splitting at pairs of points farther apart than a threshold distance.
-    # Then repackage and return:   
-    else:
-        for i in range(len(fit_split_idl[0])):
-            temp_segs = split_path_maxdist(fit_split_idl[0][i], fit_split_idl[1][i], max_dist)
-            for i in range(len(temp_segs[0])):
-                segments.append([(x, y) for x, y in zip(temp_segs[0][i], temp_segs[1][i])])
-        return MultiLineString(segments)
+    # Recast final result into a MultiLineString object and return:
+    temp_segs = []
+    for i in range(len(fit_idlsplit[0])):
+        temp_segs.append([(x, y) for x, y in zip(fit_idlsplit[0][i], fit_idlsplit[1][i])])
+    return MultiLineString(temp_segs)
 
 
 def split_path_idl(lons, lats):
