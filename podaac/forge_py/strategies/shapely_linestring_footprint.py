@@ -10,7 +10,7 @@ def fit_footprint(lon, lat, simplify=0.9, max_dist=None, **kwargs):
     Fits instrument coverage footprint for level 2 linestring data (e.g coverage
     falls on a single line or curve). Uses a function from the Shapely package,
     shapely.simplify(). Output is a polygon object for the indices of the footprint
-    outline. Returns a shapely.MultiLineString object.
+    outline, returned as a shapely.MultiLineString object.
 
     Inputs
     ------
@@ -21,9 +21,9 @@ def fit_footprint(lon, lat, simplify=0.9, max_dist=None, **kwargs):
         displacement. The higher this value, the smaller the number of vertices
         in the resulting geometry.
     max_dist (optional): float
-        Maximum distance allowed between adjacent footprint points, above which the
-        path will be broken into segments on either side of those pair of points 
-        (breaking the LineString into MultiLineString).
+        Maximum distance (in kilometers) allowed between adjacent footprint points,
+        above which the path will be broken into segments on either side of those
+        pair of points (breaking the LineString into MultiLineString).
     """
     lon = np.array(lon)
     lat = np.array(lat)
@@ -60,10 +60,11 @@ def fit_footprint(lon, lat, simplify=0.9, max_dist=None, **kwargs):
 
 def split_path_idl(lons, lats):
     """
-    Splits a 1D latitude, longitude path into two if the path crosses the international
-    dateline (IDL). Can do multiple splits if there are several IDL crossings. Inputs lon, lat
-    are 1D numpy arrays with the same length and ordered along the path. Longitudes should
-    have the domain [-180, 180). Returns two lists of numpy arrays, one each for lons and lats.
+    Splits a 1D latitude, longitude path over any international dateline (IDL) crossings.
+    Inputs lon, lat should represent the entire path as 1D numpy arrays with the same length 
+    and ordered along the path. Longitudes should have the domain [-180, 180). Returns two 
+    lists of numpy arrays, one each for lons and lats. Each numpy array represents the lons 
+    or lats for one of the path segments.
     """
     # Find indices where longitude difference is >= 360 between subsequent points.
     lons = np.array(lons)
@@ -83,10 +84,12 @@ def split_path_idl(lons, lats):
 
 def split_path_maxdist(lons, lats, max_dist):
     """
-    Splits a 1D latitude, longitude path into two or several segments at pairs of points that are
+    Splits a 1D latitude, longitude path into segments at pairs of points that are
     further apart than a threshold distance (computed as the haversine great circle distance).
-    Inputs lon, lat are 1D numpy arrays with the same length and ordered along the path. max_dist
-    is the threshold distance (float). Returns two lists of numpy arrays, one each for lons and lats.
+    Inputs lon, lat should represent the entire path as 1D numpy arrays with the same length 
+    and ordered along the path. max_dist is the threshold distance (float). Returns two 
+    lists of numpy arrays, one each for lons and lats. Each numpy array represents the lons 
+    or lats for one of the path segments.
     """
     # Compute haversine distance and get the index for values grater than threshold:
     havdist = haversine_distance(lons[:-1], lats[:-1], lons[1:], lats[1:])
@@ -109,8 +112,8 @@ def split_path_maxdist(lons, lats, max_dist):
 
 def haversine_distance(lon1, lat1, lon2, lat2, r_earth=6378.137):
     """
-    Computes the great circle distance between two points in km's. Input latitude and longitudes 
-    should be in degrees and numpy array-like. Default is to assume radius of Earth at equator. 
+    Computes the haversine great circle distance between two points in km's. Input latitude and longitudes 
+    should be in degrees and numpy array-like or floats. Default is to assume radius of Earth at equator. 
     r_earth should be in km's.
     """
     lon1 = np.deg2rad(lon1)  # Convert to radians

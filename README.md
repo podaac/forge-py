@@ -107,4 +107,4 @@ If a strategy is specified, the corresponding field to set parameters for that s
 
 * **`shapely_linestring`**: A dictionary-like mapping of parameters to use with the `shapely_linestring` algorithm. Parameters that can be included are:
   * **`simplify`** (float, optional, default: 0.9): Valid range is (0 - 1). A higher value will simplify the footprint to fewer points. A lower value retains more features / vertices.
-
+  * **`max_dist`** (float, optional, default: None): Maximum distance (in kilometers) allowed between adjacent footprint points, above which the path will be broken into segments on either side of those pair of points.
