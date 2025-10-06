@@ -5,7 +5,7 @@ import shapely
 from shapely import LineString, MultiLineString
 
 
-def fit_footprint(lon, lat, simplify=0.9, max_dist=None, **kwargs):
+def fit_footprint(lon, lat, simplify=0.9, fill_value=np.nan, max_dist=None, **kwargs):
     """
     Fits instrument coverage footprint for level 2 linestring data (e.g coverage
     falls on a single line or curve). Uses a function from the Shapely package,
@@ -20,13 +20,24 @@ def fit_footprint(lon, lat, simplify=0.9, max_dist=None, **kwargs):
         Keyword arg passed to shapely.simplify(). The maximum allowed geometry
         displacement. The higher this value, the smaller the number of vertices
         in the resulting geometry.
-    max_dist (optional): float
+    fill_value (optional): float or int.
+        Fill value in the latitude, longitude arrays. Default = np.nan; the default
+        will work even if the data have no NAN's. Future functionality will accommodate
+        multiple fill values.
+    max_dist (optional): float or int.
         Maximum distance (in kilometers) allowed between adjacent footprint points,
         above which the path will be broken into segments on either side of those
         pair of points (breaking the LineString into MultiLineString).
     """
+    # Prep arrays and remove missing values:
     lon = np.array(lon)
     lat = np.array(lat)
+    if fill_value is np.nan:
+        inan = np.isnan(lon*lat)
+    else:
+        inan = (lon == fill_value) | (lat == fill_value)
+    lon = lon[~inan]
+    lat = lat[~inan]
 
     # Optional splitting at pairs of points farther apart than a threshold distance:
     if max_dist is None:  # Default to a single segment with entire path:
