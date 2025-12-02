@@ -64,7 +64,7 @@ def fit_footprint(
     fill_value: (optional) float
         Fill value in the latitude, longitude arrays. Default = np.nan; the default
         will work even if the data have no NAN's. Future functionality will accommodate
-        multiple possible fill values.
+        multiple fill values.
     return_xythin: bool, default = False
         If True, returns the thinned out latitude, longitude arrays along with the
         footprint.
