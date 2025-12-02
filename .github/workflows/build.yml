@@ -311,33 +311,3 @@ jobs:
           platforms: linux/arm64
           build-args: |
             SOURCE=${{ env.SOURCE }}
-
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: 1.5.3
-
-      - name: Get Docker image tag
-        id: docker-tag
-        run: |
-          # Extract the first tag (version tag) from metadata output
-          DOCKER_IMAGE_TAG=$(echo "${{ steps.meta.outputs.tags }}" | head -n1)
-          echo "DOCKER_IMAGE_TAG=${DOCKER_IMAGE_TAG}" >> $GITHUB_ENV
-          echo "DOCKER_IMAGE_TAG=${DOCKER_IMAGE_TAG}" >> $GITHUB_OUTPUT
-
-      - name: Deploy Terraform
-        working-directory: terraform_deploy/
-        env:
-          AWS_ACCESS_KEY_ID:       ${{ secrets[format('AWS_ACCESS_KEY_ID_SERVICES_{0}', env.TARGET_ENV_UPPERCASE)] }}
-          AWS_SECRET_ACCESS_KEY:   ${{ secrets[format('AWS_SECRET_ACCESS_KEY_SERVICES_{0}', env.TARGET_ENV_UPPERCASE)] }}
-          AWS_ACCOUNT_ID:          ${{ secrets[format('AWS_ACCOUNT_ID_SERVICES_{0}', env.TARGET_ENV_UPPERCASE)] }}
-          AWS_DEFAULT_REGION:      us-west-2
-
-          TF_VAR_tig_docker_image: ${{ env.DOCKER_IMAGE_TAG }}
-          TF_VAR_EARTH_DATA_LOGIN_CLIENT_ID: ${{ secrets[format('EARTH_DATA_LOGIN_CLIENT_ID_{0}', env.TARGET_ENV_UPPERCASE)] }}
-          TF_VAR_EARTH_DATA_LOGIN_PASSWORD: ${{ secrets[format('EARTH_DATA_LOGIN_PASSWORD_{0}', env.TARGET_ENV_UPPERCASE)] }}
-        run: |
-          python3 override.py https://github.com/podaac/tig/releases/download/${{ env.NEW_VERSION }}/tig-terraform-${{ env.NEW_VERSION }}.zip "${{ env.DOCKER_IMAGE_TAG }}"
-          source bin/config.sh ${{ env.TARGET_ENV_LOWERCASE }}
-          terraform plan -var-file=tfvars/"${{ env.TARGET_ENV_LOWERCASE }}".tfvars -var="app_version=${{ env.NEW_VERSION }}" -out="tfplan"
-          terraform apply -auto-approve tfplan > /dev/null
