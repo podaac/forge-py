@@ -68,7 +68,9 @@ The configuration file (typically JSON) specifies the parameters for generating 
            "fill_value": -99999.0
         },
         "shapely_linestring": {
-          "simplify": 0.9
+          "simplify": 0.9,
+          "max_dist": 2000,
+           "fill_value": -99999.0
         }
       }
     }
