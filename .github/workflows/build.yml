@@ -161,7 +161,7 @@ jobs:
       - name: Create Zip release
         run: |
           cd terraform
-          zip -r ../tig-terraform-${{ env.new_version }}.zip *
+          zip -r ../forge-py-terraform-${{ env.new_version }}.zip *
 
       - name: Upload Release Artifacts
         if: |
@@ -250,7 +250,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: terraform-zip
-          path: tig-terraform-${{ env.new_version }}.zip
+          path: forge-py-terraform-${{ env.new_version }}.zip
           retention-days: 1
 
   deploy:
