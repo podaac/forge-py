@@ -176,7 +176,7 @@ class FootprintGenerator(Process):
         output_dir = os.environ.get('FOOTPRINT_OUTPUT_DIR')
 
         input_file = f's3://{file_["bucket"]}/{file_["key"]}'
-        data_type = file_['type']
+        data_type = file_.get('type')
 
         if not re.match(f"{self.processing_regex}", input_file) and data_type != "data":
             return None
