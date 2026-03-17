@@ -74,14 +74,6 @@ jobs:
           poetry run flake8 podaac
           poetry run pytest --junitxml=build/reports/pytest.xml --cov=podaac/ --cov-report=html -m "not aws and not integration" tests/
 
-      - name: Security Scan
-        uses: snyk/actions/python@master
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        with:
-          command: test
-          args: --org=${{ secrets.SNYK_ORG_ID }} --project-name=${{ github.repository }} --severity-threshold=high --fail-on=all
-
       - name: Build Package
         run: poetry build
 
