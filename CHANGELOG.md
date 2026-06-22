@@ -5,7 +5,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## unreleased
+
+## [unreleased]
+
 ### Added
 ### Changed
 - [issue/87] (https://github.com/podaac/forge-py/issues/87): Poetry update python libraries for cumulus consolidation.
@@ -21,6 +23,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Updated to Python 3.12
 - Updated github actions build to use arm ubuntu to build images
+- Updated poetry to 2.3.2
+
 
 
 ## [0.6.0]
