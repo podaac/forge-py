@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 ### Changed
-- [issue/87] (https://github.com/podaac/forge-py/issues/87): Poetry update python libraries for cumulus consolidation.
+- [Issue #87](https://github.com/podaac/forge-py/issues/87): Poetry updated Python libraries for cumulus consolidation.
 ### Deprecated
 ### Removed
 ### Fixed
