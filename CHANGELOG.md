@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+
 ## [Unreleased]
 
 ### Added
@@ -12,17 +13,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Deprecated
 ### Removed
 ### Fixed
+### Security
+
+
+## [0.8.0]
+
+### Added
+### Changed
+- [Issue #87](https://github.com/podaac/forge-py/issues/87): Poetry updated Python libraries for cumulus consolidation.
+### Deprecated
+### Removed
+### Fixed
+### Security
 
 
 ## [0.7.0]
-
-### Added
 - New functionality for shapely_linestring strategy. Now can handle NAN gaps and anomalously large distances due e.g. to platform outages.
   - New parameter max_dist
 ### Changed
 - Updated to Python 3.12
 - Updated github actions build to use arm ubuntu to build images
 - Updated poetry to 2.3.2
+
 
 
 ## [0.6.0]
